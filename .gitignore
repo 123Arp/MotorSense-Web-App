@@ -1,0 +1,28 @@
+﻿# Dependencies
+node_modules/
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Build Outputs
+dist/
+build/
+.vite/
+*.log
+
+# Environment & Temp
+.env
+.env.local
+tmp/
+*.tmp
+
+# OS & IDE
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Large ZIPs
+*.zip
