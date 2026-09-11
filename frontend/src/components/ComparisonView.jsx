@@ -10,19 +10,19 @@ function OverlayPlot({ title, xH, yH, xF, yF, xLabel, yLabel, f0, sbLo, sbHi, he
   if (f0) {
     shapes.push({
       type: 'line', x0: f0, x1: f0, yref: 'paper', y0: 0, y1: 1,
-      line: { color: '#1A56DB', width: 1.5, dash: 'solid' },
+      line: { color: '#0F4C81', width: 1.5, dash: 'solid' },
     });
   }
   if (sbLo) {
     shapes.push({
       type: 'line', x0: sbLo, x1: sbLo, yref: 'paper', y0: 0, y1: 1,
-      line: { color: '#C81E1E', width: 1.5, dash: 'dot' },
+      line: { color: '#B91C1C', width: 1.5, dash: 'dot' },
     });
   }
   if (sbHi) {
     shapes.push({
       type: 'line', x0: sbHi, x1: sbHi, yref: 'paper', y0: 0, y1: 1,
-      line: { color: '#C81E1E', width: 1.5, dash: 'dot' },
+      line: { color: '#B91C1C', width: 1.5, dash: 'dot' },
     });
   }
 
@@ -30,24 +30,24 @@ function OverlayPlot({ title, xH, yH, xF, yF, xLabel, yLabel, f0, sbLo, sbHi, he
     ...BASE_LAYOUT,
     height,
     shapes,
-    xaxis: { ...BASE_LAYOUT.xaxis, title: { text: xLabel || 'Frequency (Hz)', font: { size: 11 } } },
-    yaxis: { ...BASE_LAYOUT.yaxis, title: { text: yLabel || 'Amplitude', font: { size: 11 } } },
+    xaxis: { ...BASE_LAYOUT.xaxis, title: { text: xLabel || 'Frequency (Hz)', font: { size: 11, color: '#475569' } } },
+    yaxis: { ...BASE_LAYOUT.yaxis, title: { text: yLabel || 'Amplitude', font: { size: 11, color: '#475569' } } },
   };
 
   return (
-    <div className="card" style={{ marginBottom: '1rem' }}>
-      <div className="card-header">
-        <div className="stage-title">{title}</div>
-        <div style={{ marginLeft: 'auto', fontSize: '11px', color: '#6B7280', display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 600, color: '#057A55' }}>
-            <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#057A55', display: 'inline-block' }} /> Healthy
+    <div className="inst-panel">
+      <div className="inst-panel-header">
+        <div className="stage-title-text" style={{ fontFamily: 'monospace' }}>{title}</div>
+        <div style={{ marginLeft: 'auto', fontSize: '11px', color: '#64748B', display: 'flex', alignItems: 'center', gap: '14px', fontFamily: 'monospace' }}>
+          <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 600, color: '#15803D' }}>
+            <span style={{ width: '8px', height: '8px', borderRadius: '1px', background: '#15803D', display: 'inline-block' }} /> TRACE A: BASELINE (HEALTHY)
           </span>
-          <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 600, color: '#C81E1E' }}>
-            <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#C81E1E', display: 'inline-block' }} /> Faulty
+          <span style={{ display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 600, color: '#B91C1C' }}>
+            <span style={{ width: '8px', height: '8px', borderRadius: '1px', background: '#B91C1C', display: 'inline-block' }} /> TRACE B: EVALUATED (FAULTY)
           </span>
         </div>
       </div>
-      <div className="card-body">
+      <div className="inst-panel-body">
         <Plot
           data={[
             {
@@ -55,16 +55,16 @@ function OverlayPlot({ title, xH, yH, xF, yF, xLabel, yLabel, f0, sbLo, sbHi, he
               y: yH || [],
               type: 'scatter',
               mode: 'lines',
-              name: 'Healthy Reference',
-              line: { color: '#057A55', width: 1.5 },
+              name: 'Trace A (Healthy)',
+              line: { color: '#15803D', width: 1.5 },
             },
             {
               x: xF || [],
               y: yF || [],
               type: 'scatter',
               mode: 'lines',
-              name: 'Faulty Machine',
-              line: { color: '#C81E1E', width: 1.5 },
+              name: 'Trace B (Suspect)',
+              line: { color: '#B91C1C', width: 1.5 },
             },
           ]}
           layout={layout}
@@ -111,7 +111,7 @@ export default function ComparisonView({ params }) {
       });
       setResults(res.data);
     } catch (err) {
-      const msg = err?.response?.data?.detail || err.message || 'Comparison failed';
+      const msg = err?.response?.data?.detail || err.message || 'Comparison execution failed';
       setError(msg);
     } finally {
       setLoading(false);
@@ -129,19 +129,18 @@ export default function ComparisonView({ params }) {
   const deltaUpper = F && H ? F.features?.L_upper_dB - H.features?.L_upper_dB : null;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-      {/* Upload Panels */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1rem' }}>
-        <div className="card" style={{ marginBottom: 0 }}>
-          <div className="card-header" style={{ background: '#F0FDF4', borderColor: '#BBF7D0' }}>
-            <div style={{ fontSize: '11px', fontWeight: 700, color: '#166534', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-              1. Baseline Healthy Recording
-            </div>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      {/* Upload Panels Grid */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '16px' }}>
+        <div className="inst-panel" style={{ marginBottom: 0 }}>
+          <div className="inst-panel-header" style={{ background: '#F0FDF4', borderColor: '#BBF7D0' }}>
+            <span style={{ fontSize: '11px', fontWeight: 700, color: '#15803D', fontFamily: 'monospace' }}>
+              [CHANNEL A] BENCHMARK BASELINE RECORDING (HEALTHY)
+            </span>
           </div>
-          <div className="card-body">
+          <div className="inst-panel-body">
             <FileUpload
               label=""
-              accent="#057A55"
               onColumnsReady={(_cols, _fname, f) => setHealthyFile(f)}
               selectedColumn={healthyCol}
               onColumnChange={setHealthyCol}
@@ -149,16 +148,15 @@ export default function ComparisonView({ params }) {
           </div>
         </div>
 
-        <div className="card" style={{ marginBottom: 0 }}>
-          <div className="card-header" style={{ background: '#FEF2F2', borderColor: '#FECACA' }}>
-            <div style={{ fontSize: '11px', fontWeight: 700, color: '#991B1B', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-              2. Suspect Faulty Recording
-            </div>
+        <div className="inst-panel" style={{ marginBottom: 0 }}>
+          <div className="inst-panel-header" style={{ background: '#FEF2F2', borderColor: '#FECACA' }}>
+            <span style={{ fontSize: '11px', fontWeight: 700, color: '#B91C1C', fontFamily: 'monospace' }}>
+              [CHANNEL B] EVALUATED RECORDING (SUSPECT ANOMALY)
+            </span>
           </div>
-          <div className="card-body">
+          <div className="inst-panel-body">
             <FileUpload
               label=""
-              accent="#C81E1E"
               onColumnsReady={(_cols, _fname, f) => setFaultyFile(f)}
               selectedColumn={faultyCol}
               onColumnChange={setFaultyCol}
@@ -169,100 +167,99 @@ export default function ComparisonView({ params }) {
 
       <button
         type="button"
-        className="btn-primary"
-        style={{ width: '100%', justifyContent: 'center', padding: '10px', fontSize: '13px' }}
+        className="btn-inst-primary"
+        style={{ width: '100%', height: '36px', fontSize: '13px' }}
         disabled={loading || !healthyFile || !faultyFile}
         onClick={runComparison}
       >
         {loading ? (
           <>
-            <div className="spinner" />
-            Computing Comparative DSP Pipeline across both files...
+            <div className="inst-spinner" />
+            COMPUTING DUAL-TRACE OVERLAID SPECTRAL TRANSFORMS...
           </>
         ) : (
-          '⚖ Run Comparative Spectral & Feature Analysis'
+          'EXECUTE COMPARATIVE BENCHMARK ANALYSIS (TRACE A vs TRACE B)'
         )}
       </button>
 
       {error && (
-        <div className="banner banner-error">
-          <span>⚠</span>
-          <div><strong>Error:</strong> {error}</div>
+        <div className="inst-banner inst-banner-alert">
+          <div><strong>Comparative Analysis Error:</strong> {error}</div>
         </div>
       )}
 
       {results && (
         <>
-          {/* Dual Verdicts */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '1rem' }}>
+          {/* Dual Status Assessment */}
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '16px' }}>
             <div>
-              <div style={{ fontSize: '11px', fontWeight: 700, color: '#057A55', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '4px' }}>
-                Baseline ({H?.filename}):
+              <div style={{ fontSize: '11px', fontWeight: 700, color: '#15803D', fontFamily: 'monospace', marginBottom: '4px' }}>
+                BASELINE STATUS [{H?.filename}]:
               </div>
-              <VerdictBadge verdict={H?.verdict} />
+              <VerdictBadge verdict={H?.verdict} thresholdDB={thr} />
             </div>
             <div>
-              <div style={{ fontSize: '11px', fontWeight: 700, color: '#C81E1E', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '4px' }}>
-                Evaluated Machine ({F?.filename}):
+              <div style={{ fontSize: '11px', fontWeight: 700, color: '#B91C1C', fontFamily: 'monospace', marginBottom: '4px' }}>
+                EVALUATED STATUS [{F?.filename}]:
               </div>
-              <VerdictBadge verdict={F?.verdict} />
+              <VerdictBadge verdict={F?.verdict} thresholdDB={thr} />
             </div>
           </div>
 
-          {/* Delta Table */}
-          <div className="card">
-            <div className="card-header">
-              <div className="stage-title">Comparative Sideband Level Metric (Δ dB)</div>
-              <div className="stage-sub">
-                Evaluated Faulty (dB) − Baseline Healthy (dB) · Positive Δ indicates spectral fault energy amplification
-              </div>
+          {/* Differential Feature Table */}
+          <div className="inst-panel">
+            <div className="inst-panel-header">
+              <span className="stage-title-text">DIFFERENTIAL SPECTRAL ENERGY MATRIX (Δ dBFS)</span>
+              <span className="stage-meta-text">FORMULA: Δ = LEVEL_EVALUATED − LEVEL_BASELINE</span>
             </div>
-            <div className="card-body">
-              <table className="feature-table">
+            <div className="inst-panel-body">
+              <table className="inst-table">
                 <thead>
                   <tr>
-                    <th>Spectral Feature</th>
-                    <th>Baseline Healthy (dB)</th>
-                    <th>Evaluated Faulty (dB)</th>
-                    <th>Δ Difference (dB)</th>
-                    <th>Fault Threshold</th>
-                    <th>Diagnostic Assessment</th>
+                    <th>Spectral Coordinate</th>
+                    <th>Baseline Healthy (dBFS)</th>
+                    <th>Evaluated Machine (dBFS)</th>
+                    <th>Δ Energy Difference</th>
+                    <th>ISO Decision Threshold</th>
+                    <th>Differential Assessment</th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
-                    <td>Lower Sideband (SB-)</td>
-                    <td className="mono-val" style={{ color: '#057A55', fontWeight: 700 }}>{H?.features?.L_lower_dB?.toFixed(2)} dB</td>
-                    <td className="mono-val" style={{ color: '#111928', fontWeight: 700 }}>{F?.features?.L_lower_dB?.toFixed(2)} dB</td>
-                    <td className="mono-val" style={{ fontWeight: 800, fontSize: '13px', color: (deltaLower || 0) > 0 ? '#C81E1E' : '#057A55' }}>
+                    <td>Lower Pole-Pass (f₀ − 2sf₀)</td>
+                    <td className="font-mono" style={{ color: '#15803D', fontWeight: 700 }}>{H?.features?.L_lower_dB?.toFixed(2)} dBFS</td>
+                    <td className="font-mono" style={{ color: '#0F172A', fontWeight: 700 }}>{F?.features?.L_lower_dB?.toFixed(2)} dBFS</td>
+                    <td className="font-mono" style={{ fontWeight: 800, fontSize: '13px', color: (deltaLower || 0) > 0 ? '#B91C1C' : '#15803D' }}>
                       {(deltaLower || 0) > 0 ? `+${deltaLower?.toFixed(2)}` : deltaLower?.toFixed(2)} dB
                     </td>
-                    <td className="mono-val" style={{ color: '#6B7280' }}>{thr} dB</td>
+                    <td className="font-mono" style={{ color: '#64748B' }}>{thr} dBFS</td>
                     <td>
                       <span style={{
-                        fontSize: '10px', padding: '2px 6px', borderRadius: '3px', fontWeight: 700, textTransform: 'uppercase',
-                        background: (F?.features?.L_lower_dB || 0) > thr ? '#FDE8E8' : '#E3FBF2',
-                        color: (F?.features?.L_lower_dB || 0) > thr ? '#C81E1E' : '#057A55',
+                        fontSize: '10px', padding: '2px 6px', borderRadius: '2px', fontWeight: 700, fontFamily: 'monospace',
+                        background: (F?.features?.L_lower_dB || 0) > thr ? '#FEE2E2' : '#DCFCE7',
+                        color: (F?.features?.L_lower_dB || 0) > thr ? '#B91C1C' : '#15803D',
+                        border: `1px solid ${(F?.features?.L_lower_dB || 0) > thr ? '#FCA5A5' : '#86EFAC'}`
                       }}>
-                        {(F?.features?.L_lower_dB || 0) > thr ? 'FAULT ENERGY DETECTED' : 'WITHIN NORMAL LIMITS'}
+                        {(F?.features?.L_lower_dB || 0) > thr ? 'ALARM: ELEVATED FLUX MODULATION' : 'NORMAL: SYMMETRIC FLUX'}
                       </span>
                     </td>
                   </tr>
                   <tr>
-                    <td>Upper Sideband (SB+)</td>
-                    <td className="mono-val" style={{ color: '#057A55', fontWeight: 700 }}>{H?.features?.L_upper_dB?.toFixed(2)} dB</td>
-                    <td className="mono-val" style={{ color: '#111928', fontWeight: 700 }}>{F?.features?.L_upper_dB?.toFixed(2)} dB</td>
-                    <td className="mono-val" style={{ fontWeight: 800, fontSize: '13px', color: (deltaUpper || 0) > 0 ? '#C81E1E' : '#057A55' }}>
+                    <td>Upper Pole-Pass (f₀ + 2sf₀)</td>
+                    <td className="font-mono" style={{ color: '#15803D', fontWeight: 700 }}>{H?.features?.L_upper_dB?.toFixed(2)} dBFS</td>
+                    <td className="font-mono" style={{ color: '#0F172A', fontWeight: 700 }}>{F?.features?.L_upper_dB?.toFixed(2)} dBFS</td>
+                    <td className="font-mono" style={{ fontWeight: 800, fontSize: '13px', color: (deltaUpper || 0) > 0 ? '#B91C1C' : '#15803D' }}>
                       {(deltaUpper || 0) > 0 ? `+${deltaUpper?.toFixed(2)}` : deltaUpper?.toFixed(2)} dB
                     </td>
-                    <td className="mono-val" style={{ color: '#6B7280' }}>{thr} dB</td>
+                    <td className="font-mono" style={{ color: '#64748B' }}>{thr} dBFS</td>
                     <td>
                       <span style={{
-                        fontSize: '10px', padding: '2px 6px', borderRadius: '3px', fontWeight: 700, textTransform: 'uppercase',
-                        background: (F?.features?.L_upper_dB || 0) > thr ? '#FDE8E8' : '#E3FBF2',
-                        color: (F?.features?.L_upper_dB || 0) > thr ? '#C81E1E' : '#057A55',
+                        fontSize: '10px', padding: '2px 6px', borderRadius: '2px', fontWeight: 700, fontFamily: 'monospace',
+                        background: (F?.features?.L_upper_dB || 0) > thr ? '#FEE2E2' : '#DCFCE7',
+                        color: (F?.features?.L_upper_dB || 0) > thr ? '#B91C1C' : '#15803D',
+                        border: `1px solid ${(F?.features?.L_upper_dB || 0) > thr ? '#FCA5A5' : '#86EFAC'}`
                       }}>
-                        {(F?.features?.L_upper_dB || 0) > thr ? 'FAULT ENERGY DETECTED' : 'WITHIN NORMAL LIMITS'}
+                        {(F?.features?.L_upper_dB || 0) > thr ? 'ALARM: ELEVATED FLUX MODULATION' : 'NORMAL: SYMMETRIC FLUX'}
                       </span>
                     </td>
                   </tr>
@@ -271,22 +268,22 @@ export default function ComparisonView({ params }) {
             </div>
           </div>
 
-          {/* Overlaid Spectral Charts */}
+          {/* Dual-Trace Overlaid Spectral Charts */}
           <OverlayPlot
-            title="Method 1: FFT Amplitude Spectrum Overlay (Carrier ±50 Hz Zoom)"
+            title="DUAL-TRACE METHOD 1: FFT AMPLITUDE SPECTRUM (CARRIER ±50 Hz SPAN)"
             xH={H?.fft?.freqs_zoom}
             yH={H?.fft?.mag_zoom}
             xF={F?.fft?.freqs_zoom}
             yF={F?.fft?.mag_zoom}
             xLabel="Frequency (Hz)"
-            yLabel="Amplitude (A)"
+            yLabel="Amplitude (Arms)"
             f0={f0}
             sbLo={sbLo}
             sbHi={sbHi}
           />
 
           <OverlayPlot
-            title="Method 2: Welch PSD Estimate Overlay (Averaged Variance Reduction)"
+            title="DUAL-TRACE METHOD 2: WELCH POWER SPECTRAL DENSITY (PSD ESTIMATE)"
             xH={H?.welch_psd?.freqs_zoom}
             yH={H?.welch_psd?.psd_db_zoom}
             xF={F?.welch_psd?.freqs_zoom}
@@ -299,7 +296,7 @@ export default function ComparisonView({ params }) {
           />
 
           <OverlayPlot
-            title="Method 3: Hilbert Envelope Spectrum Overlay (Demodulated Modulation)"
+            title="DUAL-TRACE METHOD 3: HILBERT DEMODULATED ENVELOPE MODULATION"
             xH={H?.hilbert_envelope?.freqs_zoom}
             yH={H?.hilbert_envelope?.mag_zoom}
             xF={F?.hilbert_envelope?.freqs_zoom}

@@ -1,15 +1,17 @@
 ﻿import React, { useRef, useState, useEffect } from 'react';
+import { UploadIcon, WaveformIcon } from './Icons';
 import api from '../api';
 
 const CURRENT_COLS = ['I1', 'I2', 'I3'];
+const VOLTAGE_COLS = ['V1', 'V2', 'V3'];
+const VIB_COLS = ['x', 'y', 'Z'];
 
 export default function FileUpload({
   onColumnsReady,
   selectedColumn,
   onColumnChange,
   onSampleSelect,
-  label = 'Load Motor Signal Data',
-  accent = '#1A56DB',
+  label = 'DATASET INGESTION & CHANNEL SELECTION',
 }) {
   const [dragOver, setDragOver] = useState(false);
   const [file, setFile] = useState(null);
@@ -33,7 +35,7 @@ export default function FileUpload({
     if (!f) return;
     const ext = f.name.slice(f.name.lastIndexOf('.')).toLowerCase();
     if (ext !== '.csv' && ext !== '.mat') {
-      setError(`Unsupported file format '${ext}'. Please select a .csv or .mat file.`);
+      setError(`Unsupported file format '${ext}'. Please upload a standard engineering .csv or .mat file.`);
       return;
     }
 
@@ -58,7 +60,7 @@ export default function FileUpload({
         onColumnChange(bestCol);
       }
     } catch (err) {
-      const msg = err?.response?.data?.detail || err.message || 'File parsing failed';
+      const msg = err?.response?.data?.detail || err.message || 'Data parse error';
       setError(msg);
     } finally {
       setParsing(false);
@@ -74,14 +76,27 @@ export default function FileUpload({
 
   return (
     <div>
-      {label && <div className="text-xs font-semibold text-gray-700 uppercase tracking-wider mb-2">{label}</div>}
+      {label && (
+        <div style={{ fontSize: '11px', fontWeight: 700, color: '#334155', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '8px' }}>
+          {label}
+        </div>
+      )}
 
+      {/* Upload Zone */}
       <div
-        className={`upload-zone ${dragOver ? 'drag-over' : ''} ${file && !error ? 'has-file' : ''}`}
         onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
         onDragLeave={() => setDragOver(false)}
         onDrop={onDrop}
         onClick={() => inputRef.current?.click()}
+        style={{
+          border: dragOver ? '2px dashed #0F4C81' : file && !error ? '2px solid #15803D' : '2px dashed #CBD5E1',
+          background: dragOver ? '#EBF3FA' : file && !error ? '#F0FDF4' : '#F8FAFC',
+          borderRadius: '2px',
+          padding: '24px 16px',
+          textAlign: 'center',
+          cursor: 'pointer',
+          transition: 'all 0.15s ease-in-out'
+        }}
       >
         <input
           ref={inputRef}
@@ -97,41 +112,56 @@ export default function FileUpload({
 
         {parsing ? (
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
-            <div className="spinner" style={{ borderTopColor: accent, width: 28, height: 28 }} />
-            <div style={{ fontSize: '13px', fontWeight: 600, color: '#4B5563' }}>Parsing file headers...</div>
-            <div style={{ fontSize: '11px', color: '#9CA3AF' }}>Verifying 50 kHz multi-sensor channels</div>
+            <div className="inst-spinner" style={{ width: '28px', height: '28px' }} />
+            <div style={{ fontSize: '13px', fontWeight: 600, color: '#1E293B', fontFamily: 'monospace' }}>
+              STREAMING MULTI-CHANNEL DATASTREAM...
+            </div>
+            <div style={{ fontSize: '11px', color: '#64748B' }}>
+              Validating 9 synchronous channels at 50 000 samples/sec
+            </div>
           </div>
         ) : file && !error ? (
           <div>
-            <div style={{ color: '#057A55', fontSize: '24px', fontWeight: 'bold', marginBottom: '4px' }}>✓</div>
-            <div style={{ fontSize: '14px', fontWeight: 600, color: '#111928' }}>{file.name}</div>
-            <div style={{ fontSize: '11px', color: '#6B7280', marginTop: '4px' }}>
-              {(file.size / 1e6).toFixed(1)} MB · Click or drop another file to replace
+            <div style={{ fontSize: '12px', fontFamily: 'monospace', fontWeight: 700, color: '#15803D', marginBottom: '4px' }}>
+              [FILE LOADED SUCCESSFULLY]
+            </div>
+            <div style={{ fontSize: '14px', fontWeight: 700, color: '#0F172A', fontFamily: 'monospace' }}>
+              {file.name}
+            </div>
+            <div style={{ fontSize: '11px', color: '#64748B', marginTop: '4px' }}>
+              Size: {(file.size / 1e6).toFixed(2)} MB · Click or drag new file to replace
             </div>
           </div>
         ) : (
           <div>
-            <div style={{ fontSize: '28px', color: '#9CA3AF', marginBottom: '8px' }}>📥</div>
-            <div style={{ fontSize: '14px', fontWeight: 600, color: '#1F2937' }}>Drag & drop motor signal file here</div>
-            <div style={{ fontSize: '11px', color: '#6B7280', marginTop: '4px' }}>
-              Supports <strong>.csv</strong> and <strong>.mat</strong> (MATLAB v5/v7 or v7.3 HDF5, up to ~200 MB)
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '8px' }}>
+              <UploadIcon className="w-8 h-8 text-slate-400" />
+            </div>
+            <div style={{ fontSize: '13px', fontWeight: 600, color: '#0F172A' }}>
+              Select or Drag Motor Current Signal Recording
+            </div>
+            <div style={{ fontSize: '11px', color: '#64748B', marginTop: '4px', fontFamily: 'monospace' }}>
+              Accepts .CSV or MATLAB .MAT (v5/v7 or v7.3 HDF5, up to 200 MB)
             </div>
           </div>
         )}
       </div>
 
       {error && (
-        <div className="banner banner-error" style={{ marginTop: '8px' }}>
-          <span>⚠</span>
-          <div><strong>Error:</strong> {error}</div>
+        <div className="inst-banner inst-banner-alert" style={{ marginTop: '10px' }}>
+          <div>
+            <strong>Ingestion Failure:</strong> {error}
+          </div>
         </div>
       )}
 
-      {/* Bundled Samples Shortcut */}
+      {/* Bundled Benchmark Data Shortcut */}
       {samples.length > 0 && onSampleSelect && (
-        <div style={{ marginTop: '10px', padding: '8px', background: '#F9FAFB', border: '1px solid #E5E7EB', borderRadius: '4px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <span style={{ fontSize: '11px', fontWeight: 500, color: '#4B5563' }}>Bundled test datasets:</span>
-          <div style={{ display: 'flex', gap: '6px' }}>
+        <div style={{ marginTop: '10px', padding: '8px 12px', background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '2px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <span style={{ fontSize: '11px', fontWeight: 600, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+            Reference Benchmark Datasets:
+          </span>
+          <div style={{ display: 'flex', gap: '8px' }}>
             {samples.map((s) => (
               <button
                 key={s.id}
@@ -140,27 +170,34 @@ export default function FileUpload({
                   e.stopPropagation();
                   onSampleSelect(s.id);
                 }}
-                className="btn-ghost"
-                style={{ fontSize: '11px', background: '#FFFFFF', color: '#1A56DB', borderColor: '#BFDBFE' }}
+                className="btn-inst-secondary"
+                style={{ fontSize: '11px', fontFamily: 'monospace' }}
               >
-                Load {s.filename} ({s.size_mb} MB)
+                <WaveformIcon className="w-3.5 h-3.5 text-blue-700" />
+                {s.filename} ({s.size_mb} MB)
               </button>
             ))}
           </div>
         </div>
       )}
 
-      {/* Column picker */}
+      {/* Channel Matrix Picker */}
       {columns.length > 0 && !error && (
-        <div style={{ marginTop: '12px' }}>
-          <div style={{ fontSize: '11px', fontWeight: 700, color: '#374151', textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '6px', display: 'flex', justifyContent: 'space-between' }}>
-            <span>Select Channel to Analyze:</span>
-            <span style={{ fontSize: '10px', color: '#6B7280', textTransform: 'none', fontWeight: 400 }}>I1, I2, I3 = Stator current</span>
+        <div style={{ marginTop: '14px', background: '#F8FAFC', border: '1px solid #E2E8F0', padding: '10px', borderRadius: '2px' }}>
+          <div style={{ fontSize: '10px', fontWeight: 700, color: '#475569', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '8px', display: 'flex', justifyContent: 'space-between' }}>
+            <span>Available Ingested Channels (Synchronized 50 kHz):</span>
+            <span style={{ color: '#0F4C81', fontWeight: 700 }}>MCSA Target: Current (I1 / I2 / I3)</span>
           </div>
+
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
             {columns.map((col) => {
-              const isCurr = CURRENT_COLS.includes(col);
+              const isCurrent = CURRENT_COLS.includes(col);
+              const isVoltage = VOLTAGE_COLS.includes(col);
+              const isVib = VIB_COLS.includes(col);
               const isSelected = col === selectedColumn;
+
+              let typeLabel = isCurrent ? 'CURRENT' : isVoltage ? 'VOLTAGE' : isVib ? 'VIBRATION' : 'AUX';
+
               return (
                 <button
                   key={col}
@@ -171,17 +208,21 @@ export default function FileUpload({
                   }}
                   style={{
                     padding: '4px 10px',
-                    fontSize: '12px',
                     fontFamily: 'monospace',
-                    borderRadius: '4px',
-                    border: isSelected ? '2px solid #1A56DB' : '1px solid #D1D5DB',
-                    background: isSelected ? '#EBF0FF' : '#FFFFFF',
-                    color: isSelected ? '#1A56DB' : isCurr ? '#111928' : '#9CA3AF',
-                    fontWeight: isSelected ? 700 : isCurr ? 600 : 400,
+                    fontSize: '11px',
+                    borderRadius: '2px',
+                    border: isSelected ? '2px solid #0F4C81' : '1px solid #CBD5E1',
+                    background: isSelected ? '#0F4C81' : '#FFFFFF',
+                    color: isSelected ? '#FFFFFF' : isCurrent ? '#0F172A' : '#64748B',
+                    fontWeight: isSelected ? 700 : isCurrent ? 600 : 400,
                     cursor: 'pointer',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '6px'
                   }}
                 >
-                  {col} {isCurr && <span style={{ color: '#1A56DB', fontWeight: 'bold', marginLeft: '2px' }}>●</span>}
+                  <span>{col}</span>
+                  <span style={{ fontSize: '8px', opacity: 0.8, textTransform: 'uppercase' }}>[{typeLabel}]</span>
                 </button>
               );
             })}

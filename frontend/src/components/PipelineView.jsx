@@ -4,6 +4,8 @@ import FileUpload from './FileUpload';
 import SpectrumChart, { BASE_LAYOUT } from './SpectrumChart';
 import VerdictBadge from './VerdictBadge';
 import FeatureTable from './FeatureTable';
+import ReportModal from './ReportModal';
+import { WaveformIcon, FilterIcon, SpectrumIcon, PsdIcon, EnvelopeIcon, TableIcon, DownloadIcon } from './Icons';
 import api from '../api';
 
 export default function PipelineView({ params, updateParam }) {
@@ -13,6 +15,7 @@ export default function PipelineView({ params, updateParam }) {
   const [error, setError] = useState(null);
   const [result, setResult] = useState(null);
   const [fileMeta, setFileMeta] = useState(null);
+  const [isReportOpen, setIsReportOpen] = useState(false);
 
   const handleColumnsReady = (cols, fname, f, nSamples, sizeMb) => {
     setFile(f);
@@ -81,17 +84,17 @@ export default function PipelineView({ params, updateParam }) {
   const thr = result?.threshold_dB ?? params.threshold_dB;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-      {/* File Upload Stage */}
-      <div className="card">
-        <div className="card-header">
-          <span className="stage-badge">0</span>
-          <div>
-            <div className="stage-title">Signal Input & Channel Selection</div>
-            <div className="stage-sub">Upload a 50 kHz synchronized recording (.csv or .mat) or load a bundled dataset</div>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+      {/* Stage 0: File Ingestion Chassis */}
+      <div className="inst-panel">
+        <div className="inst-panel-header">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <span className="stage-tag">STAGE 00</span>
+            <span className="stage-title-text">SIGNAL STREAM INGESTION & CHANNEL CONFIGURATION</span>
           </div>
+          <span className="stage-meta-text">CLOCK: {params.fs?.toLocaleString()} Hz</span>
         </div>
-        <div className="card-body">
+        <div className="inst-panel-body">
           <FileUpload
             label=""
             onColumnsReady={handleColumnsReady}
@@ -101,8 +104,9 @@ export default function PipelineView({ params, updateParam }) {
           />
 
           {fileMeta && (
-            <div style={{ marginTop: '8px', fontSize: '11px', color: '#6B7280', fontFamily: 'monospace' }}>
-              Active file: <strong>{fileMeta.name}</strong> · {fileMeta.nSamples?.toLocaleString()} samples ({((fileMeta.nSamples || 0) / params.fs).toFixed(2)}s)
+            <div style={{ marginTop: '10px', fontSize: '11px', color: '#475569', fontFamily: 'monospace', background: '#F8FAFC', padding: '6px 10px', border: '1px solid #E2E8F0', borderRadius: '2px', display: 'flex', justifyContent: 'space-between' }}>
+              <span>ACTIVE RECORDING: <strong>{fileMeta.name}</strong></span>
+              <span>SAMPLES: <strong>{fileMeta.nSamples?.toLocaleString()}</strong> ({((fileMeta.nSamples || 0) / params.fs).toFixed(2)}s duration)</span>
             </div>
           )}
 
@@ -110,18 +114,18 @@ export default function PipelineView({ params, updateParam }) {
             <div style={{ marginTop: '12px' }}>
               <button
                 type="button"
-                className="btn-primary"
-                style={{ width: '100%', justifyContent: 'center', padding: '8px', fontSize: '13px' }}
+                className="btn-inst-primary"
+                style={{ width: '100%', height: '36px', fontSize: '13px' }}
                 onClick={() => runAnalysisWithFile(file)}
                 disabled={loading}
               >
                 {loading ? (
                   <>
-                    <div className="spinner" />
-                    Executing DSP Pipeline on {fileMeta?.name || 'file'}...
+                    <div className="inst-spinner" />
+                    EXECUTING 7-STAGE DSP DIAGNOSTIC KERNEL...
                   </>
                 ) : (
-                  '▶ Run Full MCSA Diagnostic Pipeline'
+                  'EXECUTE FULL MCSA DSP DIAGNOSTIC PIPELINE'
                 )}
               </button>
             </div>
@@ -130,18 +134,19 @@ export default function PipelineView({ params, updateParam }) {
       </div>
 
       {error && (
-        <div className="banner banner-error">
-          <span>⚠</span>
-          <div><strong>Error:</strong> {error}</div>
+        <div className="inst-banner inst-banner-alert">
+          <div><strong>Diagnostic Execution Failed:</strong> {error}</div>
         </div>
       )}
 
       {loading && !result && (
-        <div className="card" style={{ padding: '2rem', textAlign: 'center', background: '#FFFFFF' }}>
-          <div className="spinner" style={{ margin: '0 auto 12px auto', width: 36, height: 36 }} />
-          <div style={{ fontSize: '14px', fontWeight: 600, color: '#1F2937' }}>Processing DSP Pipeline...</div>
-          <div style={{ fontSize: '11px', color: '#6B7280', marginTop: '4px' }}>
-            Computing Butterworth SOS filter, Hann FFT, Welch PSD, and Hilbert analytic envelope
+        <div className="inst-panel" style={{ padding: '32px', textAlign: 'center' }}>
+          <div className="inst-spinner" style={{ margin: '0 auto 12px auto', width: '32px', height: '32px' }} />
+          <div style={{ fontSize: '13px', fontWeight: 700, color: '#0F172A', fontFamily: 'monospace' }}>
+            COMPUTING FULL FREQUENCY-DOMAIN TRANSFORMATIONS...
+          </div>
+          <div style={{ fontSize: '11px', color: '#64748B', marginTop: '6px' }}>
+            Executing Butterworth SOS filter → Hann FFT (1M points) → Welch PSD averaging → Hilbert analytic demodulation
           </div>
         </div>
       )}
@@ -152,46 +157,72 @@ export default function PipelineView({ params, updateParam }) {
           {result.quality_check.warnings.map((w, idx) => (
             <div
               key={idx}
-              className={`banner ${w.severity === 'ERROR' ? 'banner-error' : 'banner-warning'}`}
+              className={`inst-banner ${w.severity === 'ERROR' ? 'inst-banner-alert' : 'inst-banner-warning'}`}
             >
-              <span style={{ fontSize: '16px' }}>{w.severity === 'ERROR' ? '🚫' : '⚠️'}</span>
               <div>
-                <strong style={{ fontWeight: 600 }}>{w.severity} (Data Quality Check):</strong> {w.message}
+                <strong style={{ fontFamily: 'monospace' }}>[{w.severity} — SIGNAL QUALITY CRITERION]:</strong> {w.message}
               </div>
             </div>
           ))}
         </div>
       )}
 
-      {/* 7-Stage Walkthrough */}
+      {/* 7-STAGE WALKTHROUGH */}
       {result && (
         <>
-          {/* Stage 1: Raw Signal */}
-          <div className="card">
-            <div className="card-header">
-              <span className="stage-badge">1</span>
-              <div>
-                <div className="stage-title">Raw Stator Current Signal — Time Domain</div>
-                <div className="stage-sub">
-                  Initial {result.raw_signal?.display_window_ms} ms window shown · {result.raw_signal?.total_samples?.toLocaleString()} total samples ({result.raw_signal?.duration_s}s) processed
-                </div>
-              </div>
+          {/* Top Bar for Report Generation */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#F8FAFC', border: '1px solid #CBD5E1', padding: '10px 14px', borderRadius: '2px' }}>
+            <div>
+              <span style={{ fontSize: '12px', fontWeight: 700, color: '#0F172A', fontFamily: 'monospace' }}>
+                MCSA DIAGNOSTIC RESULT:
+              </span>{' '}
+              <span style={{
+                fontSize: '11px', fontWeight: 700, fontFamily: 'monospace', padding: '2px 8px', borderRadius: '2px',
+                background: result.verdict?.verdict === 'HEALTHY' ? '#DCFCE7' : '#FEE2E2',
+                color: result.verdict?.verdict === 'HEALTHY' ? '#15803D' : '#B91C1C'
+              }}>
+                {result.verdict?.label} ({result.features?.worst_sideband_dB?.toFixed(2)} dBFS)
+              </span>
             </div>
-            <div className="card-body">
+
+            <button
+              type="button"
+              onClick={() => setIsReportOpen(true)}
+              className="btn-inst-secondary"
+              style={{ background: '#0F4C81', color: '#FFFFFF', borderColor: '#0A355C', fontWeight: 600 }}
+            >
+              <DownloadIcon className="w-3.5 h-3.5" />
+              GENERATE ISO 20958 DIAGNOSTIC SHEET
+            </button>
+          </div>
+
+          {/* STAGE 1: RAW SIGNAL */}
+          <div className="inst-panel">
+            <div className="inst-panel-header">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span className="stage-tag">STAGE 01</span>
+                <WaveformIcon className="w-4 h-4 text-slate-700" />
+                <span className="stage-title-text">RAW STATOR CURRENT WAVEFORM — TIME DOMAIN</span>
+              </div>
+              <span className="stage-meta-text">
+                DISPLAY: {result.raw_signal?.display_window_ms} ms · TOTAL: {result.raw_signal?.total_samples?.toLocaleString()} PTS ({result.raw_signal?.duration_s}s)
+              </span>
+            </div>
+            <div className="inst-panel-body">
               <Plot
                 data={[{
                   x: result.raw_signal?.t,
                   y: result.raw_signal?.x,
                   type: 'scatter',
                   mode: 'lines',
-                  name: `Raw ${column}`,
-                  line: { color: '#4B5563', width: 1 },
+                  name: `Raw Current (${column})`,
+                  line: { color: '#475569', width: 1.2 },
                 }]}
                 layout={{
                   ...BASE_LAYOUT,
                   height: 200,
-                  xaxis: { ...BASE_LAYOUT.xaxis, title: { text: 'Time (seconds)', font: { size: 11 } } },
-                  yaxis: { ...BASE_LAYOUT.yaxis, title: { text: 'Current (Amperes)', font: { size: 11 } } },
+                  xaxis: { ...BASE_LAYOUT.xaxis, title: { text: 'Time (seconds)', font: { size: 11, color: '#475569' } } },
+                  yaxis: { ...BASE_LAYOUT.yaxis, title: { text: 'Current (Amperes)', font: { size: 11, color: '#475569' } } },
                 }}
                 config={{ responsive: true, displayModeBar: true, displaylogo: false, scrollZoom: true }}
                 style={{ width: '100%' }}
@@ -200,18 +231,19 @@ export default function PipelineView({ params, updateParam }) {
             </div>
           </div>
 
-          {/* Stage 2: Bandpass Filter */}
-          <div className="card">
-            <div className="card-header">
-              <span className="stage-badge">2</span>
-              <div>
-                <div className="stage-title">Bandpass Filtered Signal (SOS Form)</div>
-                <div className="stage-sub">
-                  Butterworth order-{result.filtered_signal?.order} SOS filter ({result.filtered_signal?.low_cut_hz} Hz – {result.filtered_signal?.high_cut_hz} Hz passband) · Zero-phase sosfiltfilt
-                </div>
+          {/* STAGE 2: BANDPASS FILTER */}
+          <div className="inst-panel">
+            <div className="inst-panel-header">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span className="stage-tag">STAGE 02</span>
+                <FilterIcon className="w-4 h-4 text-slate-700" />
+                <span className="stage-title-text">CASCADED SECOND-ORDER-SECTIONS (SOS) BUTTERWORTH FILTER</span>
               </div>
+              <span className="stage-meta-text">
+                PASSBAND: {result.filtered_signal?.low_cut_hz} Hz – {result.filtered_signal?.high_cut_hz} Hz · ORDER: {result.filtered_signal?.order} · ZERO-PHASE
+              </span>
             </div>
-            <div className="card-body">
+            <div className="inst-panel-body">
               <Plot
                 data={[
                   {
@@ -219,24 +251,24 @@ export default function PipelineView({ params, updateParam }) {
                     y: result.filtered_signal?.raw,
                     type: 'scatter',
                     mode: 'lines',
-                    name: 'Raw Signal',
+                    name: 'Raw Unfiltered',
                     opacity: 0.35,
-                    line: { color: '#9CA3AF', width: 1 },
+                    line: { color: '#94A3B8', width: 1 },
                   },
                   {
                     x: result.filtered_signal?.t,
                     y: result.filtered_signal?.filtered,
                     type: 'scatter',
                     mode: 'lines',
-                    name: 'SOS Filtered',
-                    line: { color: '#1A56DB', width: 1.5 },
+                    name: 'SOS Filtered Stator Current',
+                    line: { color: '#0F4C81', width: 1.5 },
                   },
                 ]}
                 layout={{
                   ...BASE_LAYOUT,
                   height: 200,
-                  xaxis: { ...BASE_LAYOUT.xaxis, title: { text: 'Time (seconds)', font: { size: 11 } } },
-                  yaxis: { ...BASE_LAYOUT.yaxis, title: { text: 'Current (Amperes)', font: { size: 11 } } },
+                  xaxis: { ...BASE_LAYOUT.xaxis, title: { text: 'Time (seconds)', font: { size: 11, color: '#475569' } } },
+                  yaxis: { ...BASE_LAYOUT.yaxis, title: { text: 'Filtered Current (Amperes)', font: { size: 11, color: '#475569' } } },
                 }}
                 config={{ responsive: true, displayModeBar: true, displaylogo: false, scrollZoom: true }}
                 style={{ width: '100%' }}
@@ -245,28 +277,29 @@ export default function PipelineView({ params, updateParam }) {
             </div>
           </div>
 
-          {/* Stage 3: FFT Spectrum */}
-          <div className="card">
-            <div className="card-header">
-              <span className="stage-badge">3</span>
-              <div>
-                <div className="stage-title">FFT Amplitude Spectrum (Hann Windowed)</div>
-                <div className="stage-sub">
-                  Resolution Δf = {result.fft?.freq_resolution_hz?.toFixed(4)} Hz · Coherent-gain corrected · Sidelobes suppressed to reveal fault sidebands
-                </div>
+          {/* STAGE 3: FFT SPECTRUM */}
+          <div className="inst-panel">
+            <div className="inst-panel-header">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span className="stage-tag">STAGE 03</span>
+                <SpectrumIcon className="w-4 h-4 text-slate-700" />
+                <span className="stage-title-text">HANN-WINDOWED DISCRETE FOURIER TRANSFORM (FFT)</span>
               </div>
+              <span className="stage-meta-text">
+                BIN RESOLUTION: Δf = {result.fft?.freq_resolution_hz?.toFixed(4)} Hz · LEAKAGE ATTENUATION: ~-31 dB
+              </span>
             </div>
-            <div className="card-body">
+            <div className="inst-panel-body">
               <SpectrumChart
-                title=""
+                title="METHOD 1: AMPLITUDE SPECTRUM (PEAK NORMALIZED)"
                 xFull={result.fft?.freqs_full}
                 yFull={result.fft?.mag_full}
                 xZoom={result.fft?.freqs_zoom}
                 yZoom={result.fft?.mag_zoom}
                 xLabel="Frequency (Hz)"
-                yLabel="Amplitude (A)"
-                traceName={`FFT (${column})`}
-                traceColor="#1A56DB"
+                yLabel="Amplitude (Arms)"
+                traceName={`FFT Spectrum (${column})`}
+                traceColor="#0F4C81"
                 f_supply={f0}
                 f_sb_lower={sbLo}
                 f_sb_upper={sbHi}
@@ -275,28 +308,29 @@ export default function PipelineView({ params, updateParam }) {
             </div>
           </div>
 
-          {/* Stage 4: Welch PSD */}
-          <div className="card">
-            <div className="card-header">
-              <span className="stage-badge">4</span>
-              <div>
-                <div className="stage-title">Welch Power Spectral Density (PSD)</div>
-                <div className="stage-sub">
-                  Averaged periodogram across 50% overlapping segments · Suppresses noise variance for reliable sideband detection
-                </div>
+          {/* STAGE 4: WELCH PSD */}
+          <div className="inst-panel">
+            <div className="inst-panel-header">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span className="stage-tag">STAGE 04</span>
+                <PsdIcon className="w-4 h-4 text-slate-700" />
+                <span className="stage-title-text">WELCH POWER SPECTRAL DENSITY (PSD) ESTIMATION</span>
               </div>
+              <span className="stage-meta-text">
+                WINDOW: HANN · SEGMENTS: 50% OVERLAP · STATISTICAL VARIANCE REDUCTION
+              </span>
             </div>
-            <div className="card-body">
+            <div className="inst-panel-body">
               <SpectrumChart
-                title=""
+                title="METHOD 2: AVERAGED POWER DENSITY ESTIMATE (dBFS/Hz)"
                 xFull={result.welch_psd?.freqs_full}
                 yFull={result.welch_psd?.psd_db_full}
                 xZoom={result.welch_psd?.freqs_zoom}
                 yZoom={result.welch_psd?.psd_db_zoom}
                 xLabel="Frequency (Hz)"
-                yLabel="PSD (dB/Hz)"
+                yLabel="Power Spectral Density (dB/Hz)"
                 traceName={`Welch PSD (${column})`}
-                traceColor="#7C3AED"
+                traceColor="#5B21B6"
                 f_supply={f0}
                 f_sb_lower={sbLo}
                 f_sb_upper={sbHi}
@@ -305,28 +339,29 @@ export default function PipelineView({ params, updateParam }) {
             </div>
           </div>
 
-          {/* Stage 5: Hilbert Envelope Spectrum */}
-          <div className="card">
-            <div className="card-header">
-              <span className="stage-badge">5</span>
-              <div>
-                <div className="stage-title">Hilbert Transform Envelope Spectrum</div>
-                <div className="stage-sub">
-                  Analytic signal |z(t)| → DC stripped → FFT · Direct isolation of fault amplitude modulation (AM) patterns
-                </div>
+          {/* STAGE 5: HILBERT ENVELOPE */}
+          <div className="inst-panel">
+            <div className="inst-panel-header">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span className="stage-tag">STAGE 05</span>
+                <EnvelopeIcon className="w-4 h-4 text-slate-700" />
+                <span className="stage-title-text">HILBERT TRANSFORM DEMODULATED ENVELOPE SPECTRUM</span>
               </div>
+              <span className="stage-meta-text">
+                ANALYTIC: |z(t)| → ZERO-DC → FFT · MECHANICAL FAULT AM DEMODULATION
+              </span>
             </div>
-            <div className="card-body">
+            <div className="inst-panel-body">
               <SpectrumChart
-                title=""
+                title="METHOD 3: DEMODULATED AMPLITUDE MODULATION ENVELOPE"
                 xFull={result.hilbert_envelope?.freqs_full}
                 yFull={result.hilbert_envelope?.mag_full}
                 xZoom={result.hilbert_envelope?.freqs_zoom}
                 yZoom={result.hilbert_envelope?.mag_zoom}
                 xLabel="Modulation Frequency (Hz)"
-                yLabel="Envelope Amplitude"
+                yLabel="Envelope Magnitude"
                 traceName={`Envelope Spectrum (${column})`}
-                traceColor="#D97706"
+                traceColor="#B45309"
                 f_supply={f0}
                 f_sb_lower={sbLo}
                 f_sb_upper={sbHi}
@@ -336,18 +371,19 @@ export default function PipelineView({ params, updateParam }) {
             </div>
           </div>
 
-          {/* Stage 6: Feature Extraction */}
-          <div className="card">
-            <div className="card-header">
-              <span className="stage-badge">6</span>
-              <div>
-                <div className="stage-title">Sideband Feature Extraction & Kinematics</div>
-                <div className="stage-sub">
-                  Peak search within ±2 Hz of nominal sidebands · Decibel ratio L_dB = 20·log₁₀(A_sb / A_fund)
-                </div>
+          {/* STAGE 6: FEATURE EXTRACTION */}
+          <div className="inst-panel">
+            <div className="inst-panel-header">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span className="stage-tag">STAGE 06</span>
+                <TableIcon className="w-4 h-4 text-slate-700" />
+                <span className="stage-title-text">FEATURE EXTRACTION & DECIBEL LEVEL NORMALIZATION</span>
               </div>
+              <span className="stage-meta-text">
+                PEAK SEARCH: ±2.0 Hz WINDOW · METRIC: L_dB = 20·log₁₀(A_sb / A_fund)
+              </span>
             </div>
-            <div className="card-body">
+            <div className="inst-panel-body">
               <FeatureTable
                 features={result.features}
                 sidebandInfo={result.sideband_info}
@@ -356,23 +392,32 @@ export default function PipelineView({ params, updateParam }) {
             </div>
           </div>
 
-          {/* Stage 7: Health Verdict */}
-          <div className="card">
-            <div className="card-header">
-              <span className="stage-badge">7</span>
-              <div>
-                <div className="stage-title">Diagnostic Verdict & Machine Health Status</div>
-                <div className="stage-sub">
-                  Automated rule-based evaluation: Worst sideband level vs. {thr} dB threshold
-                </div>
+          {/* STAGE 7: HEALTH VERDICT */}
+          <div className="inst-panel">
+            <div className="inst-panel-header">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span className="stage-tag">STAGE 07</span>
+                <span className="stage-title-text">DIAGNOSTIC HEALTH VERDICT & MACHINERY ASSESSMENT</span>
               </div>
+              <span className="stage-meta-text">
+                THRESHOLD BOUNDARY: {thr} dBFS · ISO 20958 CONFORMANCE
+              </span>
             </div>
-            <div className="card-body">
-              <VerdictBadge verdict={result.verdict} />
+            <div className="inst-panel-body">
+              <VerdictBadge verdict={result.verdict} thresholdDB={thr} />
             </div>
           </div>
         </>
       )}
+
+      {/* ISO 20958 Report Modal */}
+      <ReportModal
+        isOpen={isReportOpen}
+        onClose={() => setIsReportOpen(false)}
+        result={result}
+        params={params}
+        filename={fileMeta?.name}
+      />
     </div>
   );
 }

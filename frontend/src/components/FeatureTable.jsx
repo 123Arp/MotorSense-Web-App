@@ -6,102 +6,103 @@ export default function FeatureTable({ features, sidebandInfo, thresholdDB }) {
 
   const ampFmt = (v) => {
     if (v === undefined || v === null) return '—';
-    if (v < 0.001) return v.toExponential(3);
+    if (v < 0.001) return v.toExponential(4);
     return v.toFixed(6);
   };
 
   const dbStyle = (val) => ({
     fontFamily: 'monospace',
     fontWeight: 700,
-    color: val > thr ? '#C81E1E' : '#057A55',
+    color: val > thr ? '#B91C1C' : '#15803D',
   });
 
   return (
     <div>
-      <table className="feature-table">
+      <table className="inst-table">
         <thead>
           <tr>
             <th>Spectral Component</th>
-            <th>Target Freq (Hz)</th>
-            <th>Peak Found (Hz)</th>
-            <th>Measured Amplitude (A)</th>
-            <th>Normalized dB (rel. f₀)</th>
-            <th>Diagnostic Status</th>
+            <th>Nominal Center (Hz)</th>
+            <th>Detected Peak (Hz)</th>
+            <th>Peak Amplitude (Arms)</th>
+            <th>Normalized Magnitude (dBFS)</th>
+            <th>ISO 20958 Evaluation</th>
           </tr>
         </thead>
         <tbody>
           <tr>
             <td style={{ fontWeight: 600 }}>Fundamental Carrier (f₀)</td>
-            <td className="mono-val">{sidebandInfo.f_supply_hz?.toFixed(2)}</td>
-            <td className="mono-val">{features.f_fundamental_hz?.toFixed(4)}</td>
-            <td className="mono-val">{ampFmt(features.A_fundamental)}</td>
-            <td className="mono-val" style={{ fontWeight: 600, color: '#1A56DB' }}>0.00 dB</td>
+            <td className="font-mono">{sidebandInfo.f_supply_hz?.toFixed(2)}</td>
+            <td className="font-mono">{features.f_fundamental_hz?.toFixed(4)}</td>
+            <td className="font-mono">{ampFmt(features.A_fundamental)}</td>
+            <td className="font-mono" style={{ fontWeight: 700, color: '#0F4C81' }}>0.00 dBFS</td>
             <td>
-              <span style={{ fontSize: '10px', background: '#EBF0FF', color: '#1A56DB', padding: '2px 6px', borderRadius: '3px', fontWeight: 700 }}>
-                CARRIER REFERENCE
+              <span style={{ fontSize: '10px', background: '#F1F5F9', color: '#334155', padding: '2px 6px', borderRadius: '2px', fontFamily: 'monospace', fontWeight: 600 }}>
+                CARRIER REF
               </span>
             </td>
           </tr>
           <tr>
-            <td>Lower Fault Sideband (SB-)</td>
-            <td className="mono-val">{sidebandInfo.f_sb_lower_hz?.toFixed(4)}</td>
-            <td className="mono-val">{features.f_lower_sb_hz?.toFixed(4)}</td>
-            <td className="mono-val">{ampFmt(features.A_lower_sb)}</td>
-            <td style={dbStyle(features.L_lower_dB)} className="mono-val">
-              {features.L_lower_dB?.toFixed(2)} dB
+            <td>Lower Pole-Pass Sideband (f₀ − 2sf₀)</td>
+            <td className="font-mono">{sidebandInfo.f_sb_lower_hz?.toFixed(4)}</td>
+            <td className="font-mono">{features.f_lower_sb_hz?.toFixed(4)}</td>
+            <td className="font-mono">{ampFmt(features.A_lower_sb)}</td>
+            <td style={dbStyle(features.L_lower_dB)} className="font-mono">
+              {features.L_lower_dB?.toFixed(2)} dBFS
             </td>
             <td>
-              <SidebandTag val={features.L_lower_dB} thr={thr} />
+              <SidebandEvaluationTag val={features.L_lower_dB} thr={thr} />
             </td>
           </tr>
           <tr>
-            <td>Upper Fault Sideband (SB+)</td>
-            <td className="mono-val">{sidebandInfo.f_sb_upper_hz?.toFixed(4)}</td>
-            <td className="mono-val">{features.f_upper_sb_hz?.toFixed(4)}</td>
-            <td className="mono-val">{ampFmt(features.A_upper_sb)}</td>
-            <td style={dbStyle(features.L_upper_dB)} className="mono-val">
-              {features.L_upper_dB?.toFixed(2)} dB
+            <td>Upper Pole-Pass Sideband (f₀ + 2sf₀)</td>
+            <td className="font-mono">{sidebandInfo.f_sb_upper_hz?.toFixed(4)}</td>
+            <td className="font-mono">{features.f_upper_sb_hz?.toFixed(4)}</td>
+            <td className="font-mono">{ampFmt(features.A_upper_sb)}</td>
+            <td style={dbStyle(features.L_upper_dB)} className="font-mono">
+              {features.L_upper_dB?.toFixed(2)} dBFS
             </td>
             <td>
-              <SidebandTag val={features.L_upper_dB} thr={thr} />
+              <SidebandEvaluationTag val={features.L_upper_dB} thr={thr} />
             </td>
           </tr>
-          <tr style={{ background: '#F9FAFB', fontWeight: 'bold', borderTop: '2px solid #E5E7EB' }}>
-            <td colSpan={4}>Worst-case Sideband (Health Metric)</td>
-            <td style={{ ...dbStyle(features.worst_sideband_dB), fontSize: "13px" }} className="mono-val">
-              {features.worst_sideband_dB?.toFixed(2)} dB
+          <tr style={{ background: '#F8FAFC', fontWeight: 'bold', borderTop: '2px solid #CBD5E1' }}>
+            <td colSpan={4}>Critical Metric: Max Sideband Energy (L_max)</td>
+            <td style={{ ...dbStyle(features.worst_sideband_dB), fontSize: "13px", fontWeight: 800 }} className="font-mono">
+              {features.worst_sideband_dB?.toFixed(2)} dBFS
             </td>
             <td>
-              <SidebandTag val={features.worst_sideband_dB} thr={thr} />
+              <SidebandEvaluationTag val={features.worst_sideband_dB} thr={thr} />
             </td>
           </tr>
         </tbody>
       </table>
 
-      <div style={{ marginTop: '8px', fontSize: '11px', color: '#6B7280', display: 'flex', justifyContent: 'space-between' }}>
-        <span>Fault Threshold: <code style={{ fontFamily: 'monospace', fontWeight: 'bold', color: '#374151' }}>{thr} dB</code></span>
-        <span>Relative Level: L_dB = 20·log₁₀(A_sideband / A_fundamental)</span>
+      <div style={{ marginTop: '8px', fontSize: '11px', color: '#64748B', display: 'flex', justifyContent: 'space-between', fontFamily: 'monospace' }}>
+        <span>Decision Threshold: <strong>{thr} dBFS</strong></span>
+        <span>Relative Level Formula: L_dB = 20·log₁₀(A_sb / A_fund)</span>
       </div>
     </div>
   );
 }
 
-function SidebandTag({ val, thr }) {
-  const isElevated = val > thr;
+function SidebandEvaluationTag({ val, thr }) {
+  const isAlarm = val > thr;
   return (
     <span
       style={{
         fontSize: '10px',
         padding: '2px 6px',
-        borderRadius: '3px',
+        borderRadius: '2px',
         fontWeight: 700,
-        textTransform: 'uppercase',
         letterSpacing: '0.04em',
-        background: isElevated ? '#FDE8E8' : '#E3FBF2',
-        color: isElevated ? '#C81E1E' : '#057A55',
+        fontFamily: 'monospace',
+        background: isAlarm ? '#FEE2E2' : '#DCFCE7',
+        color: isAlarm ? '#B91C1C' : '#15803D',
+        border: `1px solid ${isAlarm ? '#FCA5A5' : '#86EFAC'}`,
       }}
     >
-      {isElevated ? 'ELEVATED' : 'NORMAL'}
+      {isAlarm ? 'ALARM (ELEVATED)' : 'NORMAL (COMPLIANT)'}
     </span>
   );
 }

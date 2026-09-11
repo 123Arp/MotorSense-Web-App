@@ -1,14 +1,15 @@
 ﻿import React from 'react';
+import { CpuIcon } from './Icons';
 
 export default function ParameterPanel({ params, updateParam }) {
   const renderNumberInput = (key, label, min, max, step, unit, hint) => (
-    <div className="param-group">
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3px' }}>
-        <label className="param-label" style={{ marginBottom: 0 }}>{label}</label>
-        {unit && <span style={{ fontSize: '10px', color: '#9CA3AF', fontFamily: 'monospace' }}>{unit}</span>}
+    <div className="inst-form-group">
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2px' }}>
+        <label className="inst-label" style={{ marginBottom: 0 }}>{label}</label>
+        {unit && <span style={{ fontSize: '10px', color: '#64748B', fontFamily: 'monospace' }}>[{unit}]</span>}
       </div>
       <input
-        className="param-input"
+        className="inst-input"
         type="number"
         min={min}
         max={max}
@@ -16,56 +17,64 @@ export default function ParameterPanel({ params, updateParam }) {
         value={params[key]}
         onChange={(e) => updateParam(key, parseFloat(e.target.value) || 0)}
       />
-      {hint && <div style={{ fontSize: '10px', color: '#9CA3AF', marginTop: '2px' }}>{hint}</div>}
+      {hint && <div style={{ fontSize: '10px', color: '#94A3B8', marginTop: '2px' }}>{hint}</div>}
     </div>
   );
 
   return (
-    <div style={{ padding: '1rem', color: '#1F2937' }}>
-      <div className="sidebar-section-title">Data Acquisition</div>
-      {renderNumberInput('fs', 'Sampling Rate', 1000, 200000, 1000, 'Hz', 'Dataset rate: 50 000 Hz')}
+    <div style={{ padding: '14px', color: '#1E293B' }}>
+      {/* Power & Acquisition */}
+      <div style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#64748B', borderBottom: '1px solid #E2E8F0', paddingBottom: '4px', marginBottom: '10px' }}>
+        ACQUISITION & POWER
+      </div>
+      {renderNumberInput('fs', 'Sampling Rate', 1000, 200000, 1000, 'Hz', 'Dataset clock: 50 000 Hz')}
+      {renderNumberInput('f_supply', 'Supply Fundamental (f₀)', 1, 400, 0.1, 'Hz', '50.0 Hz (EU/Asia) / 60.0 Hz (US)')}
 
-      <div className="sidebar-section-title">Motor Nameplate</div>
-      {renderNumberInput('f_supply', 'Supply Frequency', 1, 400, 0.5, 'Hz', '50.0 Hz (EU) / 60.0 Hz (US)')}
-      {renderNumberInput('rated_rpm', 'Rated Speed', 1, 30000, 10, 'RPM', 'Nameplate full-load speed')}
-      {renderNumberInput('poles', 'Pole Count', 2, 32, 2, 'P', 'Number of magnetic poles')}
+      {/* Motor Nameplate Specifications */}
+      <div style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#64748B', borderBottom: '1px solid #E2E8F0', paddingBottom: '4px', margin: '14px 0 10px 0' }}>
+        MOTOR NAMEPLATE DATA
+      </div>
+      {renderNumberInput('rated_rpm', 'Rated Full-Load Speed', 1, 30000, 5, 'RPM', 'Nameplate operating speed')}
+      {renderNumberInput('poles', 'Magnetic Pole Count (2p)', 2, 32, 2, 'P', 'Number of stator poles (e.g. 4)')}
 
-      <div className="sidebar-section-title">Bandpass Filter (SOS)</div>
-      {renderNumberInput('low_cut', 'Low Cutoff', 0.1, 1000, 0.5, 'Hz', 'High-pass corner')}
-      {renderNumberInput('high_cut', 'High Cutoff', 10, 24000, 10, 'Hz', 'Low-pass corner')}
-      {renderNumberInput('filter_order', 'Filter Order', 1, 10, 1, '', 'Butterworth order (SOS form)')}
+      {/* DSP Filtering Specifications */}
+      <div style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#64748B', borderBottom: '1px solid #E2E8F0', paddingBottom: '4px', margin: '14px 0 10px 0' }}>
+        DIGITAL FILTER (SOS BUTTERWORTH)
+      </div>
+      {renderNumberInput('low_cut', 'High-Pass Cutoff', 0.1, 1000, 0.5, 'Hz', 'Attenuates DC offset & drift')}
+      {renderNumberInput('high_cut', 'Low-Pass Cutoff', 10, 24000, 10, 'Hz', 'Anti-aliasing cutoff boundary')}
+      {renderNumberInput('filter_order', 'Filter Order (Cascaded SOS)', 1, 10, 1, 'N', 'Numerically stable SOS stages')}
 
-      <div className="sidebar-section-title">Diagnostic Threshold</div>
-      {renderNumberInput('threshold_dB', 'Fault Threshold', -80, 0, 1, 'dB', 'Default: -40 dB relative to carrier')}
+      {/* Diagnostic Threshold */}
+      <div style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#64748B', borderBottom: '1px solid #E2E8F0', paddingBottom: '4px', margin: '14px 0 10px 0' }}>
+        DIAGNOSTIC CRITERION (ISO 20958)
+      </div>
+      {renderNumberInput('threshold_dB', 'Fault Alarm Threshold', -80, 0, 1, 'dBFS', 'Normalized dB relative to carrier')}
 
-      <div className="sidebar-section-title">Kinematic Calculation</div>
-      <KinematicPreview params={params} />
+      {/* Real-Time Kinematics Matrix */}
+      <div style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#64748B', borderBottom: '1px solid #E2E8F0', paddingBottom: '4px', margin: '14px 0 10px 0', display: 'flex', alignItems: 'center', gap: '6px' }}>
+        <CpuIcon className="w-3.5 h-3.5 text-blue-700" />
+        KINEMATIC TRACKING MATRIX
+      </div>
+      <KinematicMatrix params={params} />
 
-      <div className="sidebar-section-title" style={{ marginTop: '1.5rem' }}>About the Data</div>
-      <div style={{ fontSize: '11px', color: '#4B5563', lineHeight: 1.5, padding: '0 2px' }}>
-        <p style={{ marginBottom: '8px' }}>
-          Data collected from a <strong>0.2 kW three-phase squirrel-cage induction motor</strong>.
-          Vibration (x, y, Z), current (I1, I2, I3), and voltage (V1, V2, V3) all synchronously sampled at <strong>50 kHz</strong>.
+      {/* About Dataset Citation */}
+      <div style={{ fontSize: '10px', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: '#64748B', borderBottom: '1px solid #E2E8F0', paddingBottom: '4px', margin: '18px 0 8px 0' }}>
+        ABOUT THE DATASET
+      </div>
+      <div style={{ fontSize: '11px', color: '#475569', lineHeight: 1.5, background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '2px', padding: '8px' }}>
+        <p style={{ margin: '0 0 6px 0' }}>
+          0.2 kW 3-phase squirrel-cage induction machine. 9 synchronized channels (vibration <code>x,y,Z</code>, current <code>I1,I2,I3</code>, voltage <code>V1,V2,V3</code>) sampled at 50 kHz.
         </p>
-        <p style={{ marginBottom: '8px' }}>
-          Fault scenarios include phase removal and mechanical misalignment across healthy and faulty states.
-        </p>
-        <div>
+        <div style={{ fontSize: '10px', color: '#64748B' }}>
+          Citation: <em>Scientific Data</em> (Nature, 2025).<br />
           <a
             href="https://www.nature.com/articles/s41597-025-05437-3"
             target="_blank"
             rel="noreferrer"
-            style={{ color: '#1A56DB', display: 'block', marginBottom: '4px', textDecoration: 'none' }}
+            style={{ color: '#0F4C81', fontWeight: 600, textDecoration: 'none', display: 'block', marginTop: '2px' }}
           >
-            Nature Scientific Data (2025) ↗
-          </a>
-          <a
-            href="https://doi.org/10.6084/m9.figshare.27216219"
-            target="_blank"
-            rel="noreferrer"
-            style={{ color: '#1A56DB', display: 'block', textDecoration: 'none' }}
-          >
-            Figshare Dataset DOI ↗
+            DOI: 10.1038/s41597-025-05437-3 ↗
           </a>
         </div>
       </div>
@@ -73,7 +82,7 @@ export default function ParameterPanel({ params, updateParam }) {
   );
 }
 
-function KinematicPreview({ params }) {
+function KinematicMatrix({ params }) {
   const { f_supply, rated_rpm, poles } = params;
   if (!f_supply || !rated_rpm || !poles) return null;
 
@@ -83,23 +92,23 @@ function KinematicPreview({ params }) {
   const f_low = f_supply - 2 * f_slip;
   const f_up = f_supply + 2 * f_slip;
 
-  const items = [
+  const metrics = [
     { label: 'Sync Speed (Ns)', val: Ns.toFixed(1), unit: 'RPM' },
-    { label: 'Slip (s)', val: (s * 100).toFixed(3), unit: '%' },
+    { label: 'Per-Unit Slip (s)', val: (s * 100).toFixed(3), unit: '%' },
     { label: 'Slip Freq (f_slip)', val: f_slip.toFixed(3), unit: 'Hz' },
-    { label: 'Lower SB (f - 2sf)', val: f_low.toFixed(3), unit: 'Hz' },
-    { label: 'Upper SB (f + 2sf)', val: f_up.toFixed(3), unit: 'Hz' },
+    { label: 'Lower Pole-Pass', val: f_low.toFixed(3), unit: 'Hz' },
+    { label: 'Upper Pole-Pass', val: f_up.toFixed(3), unit: 'Hz' },
   ];
 
   return (
-    <div style={{ background: '#F9FAFB', border: '1px solid #E5E7EB', borderRadius: '4px', padding: '8px', fontSize: '11px' }}>
+    <div style={{ background: '#F8FAFC', border: '1px solid #E2E8F0', borderRadius: '2px', padding: '6px 8px', fontSize: '11px' }}>
       <table style={{ width: '100%' }}>
         <tbody>
-          {items.map((it) => (
-            <tr key={it.label} style={{ borderBottom: '1px solid #F3F4F6' }}>
-              <td style={{ padding: '2px 0', color: '#6B7280' }}>{it.label}</td>
-              <td style={{ padding: '2px 0', textAlign: 'right', fontFamily: 'monospace', fontWeight: 600, color: '#111928' }}>
-                {it.val} <span style={{ fontSize: '9px', color: '#9CA3AF' }}>{it.unit}</span>
+          {metrics.map((m) => (
+            <tr key={m.label} style={{ borderBottom: '1px solid #F1F5F9' }}>
+              <td style={{ padding: '3px 0', color: '#64748B' }}>{m.label}</td>
+              <td style={{ padding: '3px 0', textAlign: 'right', fontFamily: 'monospace', fontWeight: 700, color: '#0F172A' }}>
+                {m.val} <span style={{ fontSize: '9px', color: '#94A3B8' }}>{m.unit}</span>
               </td>
             </tr>
           ))}

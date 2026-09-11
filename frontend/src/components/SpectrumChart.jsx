@@ -3,28 +3,31 @@ import Plot from 'react-plotly.js';
 
 export const BASE_LAYOUT = {
   paper_bgcolor: '#FFFFFF',
-  plot_bgcolor: '#FAFAFA',
-  font: { family: 'Inter, sans-serif', color: '#374151', size: 11 },
+  plot_bgcolor: '#FBFBFD',
+  font: { family: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', color: '#334155', size: 11 },
   xaxis: {
-    gridcolor: '#F3F4F6',
-    linecolor: '#D1D5DB',
-    tickfont: { family: 'monospace', size: 10 },
-    zerolinecolor: '#E5E7EB',
+    gridcolor: '#E8ECEF',
+    linecolor: '#CBD5E1',
+    tickfont: { family: 'monospace', size: 10, color: '#475569' },
+    zerolinecolor: '#CBD5E1',
+    title: { font: { size: 11, color: '#475569' } }
   },
   yaxis: {
-    gridcolor: '#F3F4F6',
-    linecolor: '#D1D5DB',
-    tickfont: { family: 'monospace', size: 10 },
+    gridcolor: '#E8ECEF',
+    linecolor: '#CBD5E1',
+    tickfont: { family: 'monospace', size: 10, color: '#475569' },
+    zerolinecolor: '#CBD5E1',
+    title: { font: { size: 11, color: '#475569' } }
   },
   margin: { l: 55, r: 25, t: 25, b: 45 },
   showlegend: true,
   legend: {
-    bgcolor: 'rgba(255,255,255,0.9)',
-    bordercolor: '#E5E7EB',
+    bgcolor: 'rgba(255, 255, 255, 0.95)',
+    bordercolor: '#CBD5E1',
     borderwidth: 1,
-    font: { size: 11 },
+    font: { size: 10, family: 'monospace' },
   },
-  hoverlabel: { bgcolor: '#FFFFFF', bordercolor: '#E5E7EB', font: { family: 'monospace' } },
+  hoverlabel: { bgcolor: '#0F172A', bordercolor: '#334155', font: { family: 'monospace', color: '#FFFFFF' } },
 };
 
 export default function SpectrumChart({
@@ -36,7 +39,7 @@ export default function SpectrumChart({
   xLabel = 'Frequency (Hz)',
   yLabel = 'Magnitude',
   traceName = 'Spectrum',
-  traceColor = '#1A56DB',
+  traceColor = '#0F4C81',
   f_supply,
   f_sb_lower,
   f_sb_upper,
@@ -59,17 +62,17 @@ export default function SpectrumChart({
       yref: 'paper',
       y0: 0,
       y1: 1,
-      line: { color: '#1A56DB', width: 1.5, dash: 'solid' },
+      line: { color: '#0F4C81', width: 1.5, dash: 'solid' },
     });
     annotations.push({
       x: f_supply,
       yref: 'paper',
       y: 0.96,
-      text: `<b>f₀:</b> ${f_supply.toFixed(1)} Hz`,
+      text: `<b>f₀: ${f_supply.toFixed(1)} Hz</b>`,
       showarrow: false,
-      font: { size: 9, color: '#1A56DB', family: 'monospace' },
-      bgcolor: 'rgba(255,255,255,0.9)',
-      bordercolor: '#1A56DB',
+      font: { size: 9, color: '#0F4C81', family: 'monospace' },
+      bgcolor: 'rgba(255,255,255,0.95)',
+      bordercolor: '#0F4C81',
       borderwidth: 1,
       borderpad: 2,
     });
@@ -83,17 +86,17 @@ export default function SpectrumChart({
       yref: 'paper',
       y0: 0,
       y1: 1,
-      line: { color: '#C81E1E', width: 1.5, dash: 'dot' },
+      line: { color: '#B91C1C', width: 1.5, dash: 'dot' },
     });
     annotations.push({
       x: f_sb_lower,
       yref: 'paper',
       y: 0.82,
-      text: `<b>SB-:</b> ${f_sb_lower.toFixed(2)} Hz`,
+      text: `<b>SB-: ${f_sb_lower.toFixed(2)} Hz</b>`,
       showarrow: false,
-      font: { size: 9, color: '#C81E1E', family: 'monospace' },
-      bgcolor: 'rgba(255,255,255,0.9)',
-      bordercolor: '#C81E1E',
+      font: { size: 9, color: '#B91C1C', family: 'monospace' },
+      bgcolor: 'rgba(255,255,255,0.95)',
+      bordercolor: '#B91C1C',
       borderwidth: 1,
       borderpad: 2,
     });
@@ -107,17 +110,17 @@ export default function SpectrumChart({
       yref: 'paper',
       y0: 0,
       y1: 1,
-      line: { color: '#C81E1E', width: 1.5, dash: 'dot' },
+      line: { color: '#B91C1C', width: 1.5, dash: 'dot' },
     });
     annotations.push({
       x: f_sb_upper,
       yref: 'paper',
       y: 0.82,
-      text: `<b>SB+:</b> ${f_sb_upper.toFixed(2)} Hz`,
+      text: `<b>SB+: ${f_sb_upper.toFixed(2)} Hz</b>`,
       showarrow: false,
-      font: { size: 9, color: '#C81E1E', family: 'monospace' },
-      bgcolor: 'rgba(255,255,255,0.9)',
-      bordercolor: '#C81E1E',
+      font: { size: 9, color: '#B91C1C', family: 'monospace' },
+      bgcolor: 'rgba(255,255,255,0.95)',
+      bordercolor: '#B91C1C',
       borderwidth: 1,
       borderpad: 2,
     });
@@ -140,29 +143,31 @@ export default function SpectrumChart({
     height,
     shapes,
     annotations,
-    xaxis: { ...BASE_LAYOUT.xaxis, title: { text: xLabel, font: { size: 11 } } },
-    yaxis: { ...BASE_LAYOUT.yaxis, title: { text: yLabel, font: { size: 11 } } },
+    xaxis: { ...BASE_LAYOUT.xaxis, title: { text: xLabel, font: { size: 11, color: '#475569' } } },
+    yaxis: { ...BASE_LAYOUT.yaxis, title: { text: yLabel, font: { size: 11, color: '#475569' } } },
   };
 
   return (
     <div>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-        <div style={{ fontSize: '12px', fontWeight: 600, color: '#374151' }}>{title}</div>
+        <div style={{ fontSize: '12px', fontWeight: 600, color: '#1E293B', fontFamily: 'monospace' }}>{title}</div>
         {xZoom && xFull && (
           <div style={{ display: 'flex', gap: '4px' }}>
             <button
               type="button"
-              className={`btn-ghost ${view === 'zoom' ? 'active' : ''}`}
+              className={`btn-inst-secondary ${view === 'zoom' ? 'active' : ''}`}
+              style={{ height: '24px', fontSize: '10px', padding: '0 8px', fontFamily: 'monospace' }}
               onClick={() => setView('zoom')}
             >
-              Zoom (Carrier ±50 Hz)
+              SPAN: ±50 Hz (CARRIER ZOOM)
             </button>
             <button
               type="button"
-              className={`btn-ghost ${view === 'full' ? 'active' : ''}`}
+              className={`btn-inst-secondary ${view === 'full' ? 'active' : ''}`}
+              style={{ height: '24px', fontSize: '10px', padding: '0 8px', fontFamily: 'monospace' }}
               onClick={() => setView('full')}
             >
-              Full Spectrum (0-25 kHz)
+              SPAN: FULL (0 - 25 kHz)
             </button>
           </div>
         )}

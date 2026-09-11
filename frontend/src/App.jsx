@@ -2,6 +2,7 @@
 import ParameterPanel from './components/ParameterPanel';
 import PipelineView from './components/PipelineView';
 import ComparisonView from './components/ComparisonView';
+import { WaveformIcon, TableIcon, SettingsIcon } from './components/Icons';
 import api, { getApiBaseUrl, setApiBaseUrl } from './api';
 
 const DEFAULT_PARAMS = {
@@ -55,82 +56,114 @@ export default function App() {
 
   return (
     <div className="app-shell">
-      {/* Top Header */}
-      <header className="app-header" style={{ justifyContent: 'space-between' }}>
+      {/* Precision Instrument Header */}
+      <header className="inst-header">
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <svg width="26" height="26" viewBox="0 0 32 32" fill="none">
-            <rect x="3" y="16" width="4" height="12" rx="1" fill="#1A56DB" />
-            <rect x="9" y="10" width="4" height="18" rx="1" fill="#1A56DB" />
-            <rect x="15" y="4" width="4" height="24" rx="1" fill="#1A56DB" />
-            <rect x="21" y="12" width="4" height="16" rx="1" fill="#1A56DB" />
-            <rect x="27" y="18" width="4" height="10" rx="1" fill="#1A56DB" />
-          </svg>
+          {/* Hardware Oscilloscope Wave Logo */}
+          <div style={{
+            width: '28px', height: '28px', background: '#0F4C81', border: '1px solid #38BDF8',
+            borderRadius: '2px', display: 'flex', alignItems: 'center', justifyContent: 'center'
+          }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#38BDF8" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M2 12h3l3-7 4 14 4-10 3 6h3" />
+            </svg>
+          </div>
+
           <div>
-            <div style={{ fontSize: '14px', fontWeight: 700, color: '#111928', display: 'flex', alignItems: 'center', gap: '8px', lineHeight: 1 }}>
-              <span>MotorSense</span>
-              <span style={{ fontSize: '10px', background: '#EBF0FF', color: '#1A56DB', fontFamily: 'monospace', padding: '2px 6px', borderRadius: '3px', fontWeight: 600 }}>
-                MCSA v1.0
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', lineHeight: 1 }}>
+              <span style={{ fontSize: '14px', fontWeight: 800, letterSpacing: '0.06em', color: '#FFFFFF' }}>
+                MOTORSENSE™
+              </span>
+              <span style={{ fontSize: '10px', fontFamily: 'monospace', background: '#1E293B', color: '#94A3B8', padding: '2px 5px', borderRadius: '2px', border: '1px solid #334155' }}>
+                MCSA INDUSTRIAL ANALYZER v2.4
               </span>
             </div>
-            <div style={{ fontSize: '11px', color: '#6B7280', marginTop: '2px' }}>
-              DSP-Based Motor Current Signature Analysis for Predictive Maintenance
+            <div style={{ fontSize: '10px', color: '#94A3B8', marginTop: '3px', letterSpacing: '0.02em' }}>
+              Condition Monitoring & Diagnostics of Machine Systems — Electrical Signature Analysis (ISO 20958)
             </div>
           </div>
         </div>
 
-        {/* Status Indicators & Settings */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+        {/* Top-Right Telemetry Indicators */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: '6px', padding: '3px 8px',
+            background: '#1E293B', border: '1px solid #334155', borderRadius: '2px',
+            fontFamily: 'monospace', fontSize: '11px', color: '#94A3B8'
+          }}>
+            <span>ACQ CLOCK:</span>
+            <strong style={{ color: '#E2E8F0' }}>50.00 kHz</strong>
+          </div>
+
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: '6px', padding: '3px 8px',
+            background: '#1E293B', border: '1px solid #334155', borderRadius: '2px',
+            fontFamily: 'monospace', fontSize: '11px', color: '#94A3 CH'
+          }}>
+            <span>CHANNELS:</span>
+            <strong style={{ color: '#E2E8F0' }}>9-CH SYNC</strong>
+          </div>
+
           <button
             type="button"
             onClick={() => setShowConfigModal(true)}
-            style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '4px 10px', fontSize: '12px', border: '1px solid #D1D5DB', borderRadius: '4px', background: '#FFFFFF', cursor: 'pointer' }}
+            style={{
+              display: 'flex', alignItems: 'center', gap: '6px', padding: '3px 10px',
+              borderRadius: '2px', cursor: 'pointer', fontFamily: 'monospace', fontSize: '11px',
+              background: apiConnected === true ? '#052E16' : '#450A0A',
+              border: `1px solid ${apiConnected === true ? '#15803D' : '#991B1B'}`,
+              color: apiConnected === true ? '#86EFAC' : '#FCA5A5',
+            }}
           >
             <span
               style={{
-                width: '8px',
-                height: '8px',
-                borderRadius: '50%',
-                display: 'inline-block',
-                background: apiConnected === true ? '#057A55' : apiConnected === false ? '#C81E1E' : '#F59E0B',
+                width: '7px', height: '7px', borderRadius: '50%',
+                background: apiConnected === true ? '#22C55E' : apiConnected === false ? '#EF4444' : '#F59E0B'
               }}
             />
-            <span style={{ fontFamily: 'monospace', fontSize: '11px', color: '#374151' }}>
-              {apiConnected === true ? 'Backend Online' : apiConnected === false ? 'Backend Offline' : 'Connecting...'}
+            <span>
+              {apiConnected === true ? 'DSP BACKEND: ONLINE' : apiConnected === false ? 'DSP BACKEND: OFFLINE' : 'DSP BACKEND: CONNECTING'}
             </span>
+            <SettingsIcon className="w-3 h-3 opacity-70" />
           </button>
-
-          <span style={{ fontSize: '11px', fontFamily: 'monospace', background: '#F3F4F6', color: '#4B5563', padding: '4px 8px', borderRadius: '4px' }}>
-            50 kHz Synchronized
-          </span>
         </div>
       </header>
 
-      {/* Main Container */}
-      <div className="app-body">
-        {/* Left Sidebar */}
-        <aside className="sidebar">
+      {/* Sub-Navigation Bar */}
+      <div className="inst-subnav">
+        <div style={{ display: 'flex', gap: '4px' }}>
+          <button
+            type="button"
+            className={`tab-inst ${activeTab === 'pipeline' ? 'active' : ''}`}
+            onClick={() => setActiveTab('pipeline')}
+          >
+            <WaveformIcon className="w-3.5 h-3.5" />
+            [01] 7-STAGE MCSA DSP PIPELINE WALKTHROUGH
+          </button>
+          <button
+            type="button"
+            className={`tab-inst ${activeTab === 'comparison' ? 'active' : ''}`}
+            onClick={() => setActiveTab('comparison')}
+          >
+            <TableIcon className="w-3.5 h-3.5" />
+            [02] COMPARATIVE BENCHMARK (HEALTHY vs. FAULTY)
+          </button>
+        </div>
+
+        <div style={{ fontSize: '11px', color: '#64748B', fontFamily: 'monospace' }}>
+          STANDARDS: <strong>ISO 20958</strong> / <strong>IEEE Std 1415</strong>
+        </div>
+      </div>
+
+      {/* Main Instrumentation Console Workspace */}
+      <div className="app-workspace">
+        {/* Left Parameter Panel */}
+        <aside className="inst-sidebar">
           <ParameterPanel params={params} updateParam={updateParam} />
         </aside>
 
-        {/* Content Area */}
-        <main className="main-area">
-          <div className="tab-bar">
-            <button
-              type="button"
-              className={`tab-btn ${activeTab === 'pipeline' ? 'active' : ''}`}
-              onClick={() => setActiveTab('pipeline')}
-            >
-              📊 Single-File DSP Pipeline Walkthrough
-            </button>
-            <button
-              type="button"
-              className={`tab-btn ${activeTab === 'comparison' ? 'active' : ''}`}
-              onClick={() => setActiveTab('comparison')}
-            >
-              ⚖ Healthy vs. Faulty Comparative Analysis
-            </button>
-          </div>
-
+        {/* Main Canvas Area */}
+        <main className="inst-canvas">
           {activeTab === 'pipeline' ? (
             <PipelineView params={params} updateParam={updateParam} />
           ) : (
@@ -139,42 +172,58 @@ export default function App() {
         </main>
       </div>
 
-      {/* Backend URL Modal */}
+      {/* Backend Connection Modal */}
       {showConfigModal && (
-        <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 50, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
-          <div style={{ background: '#FFFFFF', borderRadius: '8px', maxWidth: '440px', width: '100%', padding: '1.25rem', border: '1px solid #E5E7EB', boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1)' }}>
-            <h3 style={{ fontSize: '14px', fontWeight: 700, color: '#111928', marginBottom: '4px' }}>Backend API Connection</h3>
-            <p style={{ fontSize: '12px', color: '#6B7280', marginBottom: '16px', lineHeight: 1.5 }}>
-              If MotorSense frontend is hosted on Netlify or cloud static hosting, point it to your active backend (e.g. <code style={{ background: '#F3F4F6', padding: '2px 4px', borderRadius: '3px', fontFamily: 'monospace' }}>https://motorsense-api.onrender.com</code>). Leave empty for local development.
-            </p>
-
-            <label style={{ display: 'block', fontSize: '11px', fontWeight: 600, textTransform: 'uppercase', color: '#374151', marginBottom: '4px' }}>Backend API URL:</label>
-            <input
-              type="text"
-              placeholder="https://motorsense-api.onrender.com"
-              value={customApiUrl}
-              onChange={(e) => setCustomApiUrl(e.target.value)}
-              className="param-input"
-              style={{ fontSize: '12px', marginBottom: '16px' }}
-            />
-
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+        <div className="inst-modal-backdrop">
+          <div className="inst-modal-window">
+            <div style={{ padding: '12px 16px', background: '#0F172A', color: '#FFFFFF', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: '12px', fontWeight: 700, fontFamily: 'monospace', letterSpacing: '0.05em' }}>
+                HARDWARE / API ENDPOINT CONFIGURATION
+              </span>
               <button
                 type="button"
                 onClick={() => setShowConfigModal(false)}
-                className="btn-ghost"
-                style={{ padding: '6px 12px' }}
+                style={{ background: 'transparent', border: 'none', color: '#94A3B8', cursor: 'pointer', fontSize: '16px' }}
               >
-                Cancel
+                ✕
               </button>
-              <button
-                type="button"
-                onClick={saveApiUrl}
-                className="btn-primary"
-                style={{ padding: '6px 12px' }}
-              >
-                Save &amp; Connect
-              </button>
+            </div>
+
+            <div style={{ padding: '16px', fontSize: '12px', color: '#334155' }}>
+              <p style={{ margin: '0 0 12px 0', lineHeight: 1.5 }}>
+                Configure the active DSP Processing Kernel URL. Leave empty to use local relative proxy (<code>/api</code>).
+              </p>
+
+              <label className="inst-label">Remote API Endpoint Host URL:</label>
+              <input
+                type="text"
+                placeholder="https://motorsense-api.onrender.com"
+                value={customApiUrl}
+                onChange={(e) => setCustomApiUrl(e.target.value)}
+                className="inst-input"
+                style={{ marginBottom: '14px' }}
+              />
+
+              <div style={{ fontSize: '11px', color: '#64748B', background: '#F8FAFC', padding: '8px', border: '1px solid #E2E8F0', borderRadius: '2px', marginBottom: '16px' }}>
+                <strong>Verification Test:</strong> Calls <code>GET /api/health</code> to confirm low-latency handshake and NumPy/SciPy execution environment.
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                <button
+                  type="button"
+                  onClick={() => setShowConfigModal(false)}
+                  className="btn-inst-secondary"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={saveApiUrl}
+                  className="btn-inst-primary"
+                >
+                  Save &amp; Verify Handshake
+                </button>
+              </div>
             </div>
           </div>
         </div>
