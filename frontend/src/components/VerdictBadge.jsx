@@ -1,5 +1,4 @@
 ﻿import React from 'react';
-import { ShieldCheckIcon, AlertTriangleIcon } from './Icons';
 
 export default function VerdictBadge({ verdict, thresholdDB }) {
   if (!verdict) return null;
@@ -7,79 +6,60 @@ export default function VerdictBadge({ verdict, thresholdDB }) {
 
   return (
     <div style={{
-      display: 'flex',
-      alignItems: 'flex-start',
-      gap: '14px',
-      padding: '16px',
+      background: '#0B101D',
+      border: `1px solid ${isHealthy ? '#00E676' : '#FF1744'}`,
       borderRadius: '2px',
-      border: `1px solid ${isHealthy ? '#BBF7D0' : '#FECACA'}`,
-      background: isHealthy ? '#F0FDF4' : '#FEF2F2',
+      padding: '10px 14px',
+      color: '#FFFFFF',
+      display: 'flex',
+      alignItems: 'center',
+      gap: '14px',
+      boxShadow: `inset 0 0 12px ${isHealthy ? 'rgba(0, 230, 118, 0.15)' : 'rgba(255, 23, 68, 0.15)'}`
     }}>
+      {/* Annunciator LED Lamp */}
       <div style={{
-        width: '36px',
-        height: '36px',
-        borderRadius: '2px',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        background: isHealthy ? '#DCFCE7' : '#FEE2E2',
-        flexShrink: 0,
-        border: `1px solid ${isHealthy ? '#86EFAC' : '#FCA5A5'}`
-      }}>
-        {isHealthy ? (
-          <ShieldCheckIcon className="w-5 h-5 text-green-700" />
-        ) : (
-          <AlertTriangleIcon className="w-5 h-5 text-red-700" />
-        )}
-      </div>
+        width: '16px',
+        height: '16px',
+        borderRadius: '50%',
+        background: isHealthy ? '#00E676' : '#FF1744',
+        boxShadow: isHealthy ? '0 0 10px #00E676, inset 0 0 4px #FFFFFF' : '0 0 10px #FF1744, inset 0 0 4px #FFFFFF',
+        flexShrink: 0
+      }} />
 
       <div style={{ flex: 1 }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '2px' }}>
           <div style={{
-            fontSize: '14px',
-            fontWeight: 700,
-            letterSpacing: '0.04em',
-            color: isHealthy ? '#15803D' : '#B91C1C',
-            textTransform: 'uppercase',
-            fontFamily: 'monospace'
+            fontSize: '13px',
+            fontFamily: 'monospace',
+            fontWeight: 800,
+            letterSpacing: '0.05em',
+            color: isHealthy ? '#00E676' : '#FF5252'
           }}>
-            {isHealthy ? 'HEALTHY — NORMAL OPERATING PROFILE' : 'FAULT LIKELY — ANOMALY DETECTED'}
+            {isHealthy ? 'DIAGNOSTIC STATUS: NORMAL (HEALTHY MOTOR)' : 'DIAGNOSTIC STATUS: ALARM (FAULT ANOMALY LIKELY)'}
           </div>
 
-          <div style={{
-            fontSize: '10px',
+          <span style={{
             fontFamily: 'monospace',
+            fontSize: '10px',
             fontWeight: 700,
-            padding: '2px 6px',
+            padding: '1px 6px',
             borderRadius: '2px',
-            background: isHealthy ? '#15803D' : '#B91C1C',
-            color: '#FFFFFF'
+            background: isHealthy ? '#004D25' : '#4D000E',
+            border: `1px solid ${isHealthy ? '#00E676' : '#FF1744'}`,
+            color: isHealthy ? '#69F0AE' : '#FF8A80'
           }}>
-            {isHealthy ? 'CLASS 1 (NORMAL)' : 'CLASS 4 (ACTION)'}
-          </div>
+            {isHealthy ? 'ISO CLASS 1' : 'ISO CLASS 4'}
+          </span>
         </div>
 
-        <p style={{
-          margin: '0 0 6px 0',
-          fontSize: '12px',
-          lineHeight: 1.5,
-          color: isHealthy ? '#166534' : '#991B1B'
-        }}>
+        <div style={{ fontSize: '11px', color: '#90CAF9', lineHeight: 1.4, fontFamily: 'monospace' }}>
           {verdict.explanation}
-        </p>
+        </div>
 
-        <div style={{
-          display: 'flex',
-          gap: '16px',
-          fontSize: '11px',
-          color: isHealthy ? '#15803D' : '#B91C1C',
-          fontFamily: 'monospace',
-          borderTop: `1px dashed ${isHealthy ? '#86EFAC' : '#FCA5A5'}`,
-          paddingTop: '6px'
-        }}>
-          <span>Standard: <strong>ISO 20958:2013</strong></span>
-          <span>Decision Boundary: <strong>{thresholdDB ?? -40} dBFS</strong></span>
-          <span>Classification: <strong>Electrical Signature Analysis (MCSA)</strong></span>
+        <div style={{ fontSize: '10px', color: '#64748B', fontFamily: 'monospace', marginTop: '4px', display: 'flex', gap: '16px' }}>
+          <span>STANDARD: ISO 20958 MCSA</span>
+          <span>CRITERION: {thresholdDB ?? -40} dBFS</span>
+          <span>EVALUATION: SPECTRAL MODULATION ENERGY</span>
         </div>
       </div>
     </div>

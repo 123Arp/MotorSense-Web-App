@@ -3,37 +3,23 @@
 @tailwind utilities;
 
 /* ==========================================================================
-   MOTORSENSE™ INDUSTRIAL DESIGN SYSTEM (ISO 20958 MCSA INSTRUMENTATION)
-   Designed for Plant Reliability Engineers & Course Evaluators
+   ANALOG DEVICES — ALICE M1K (Active Learning Interface for Current & Electronics)
+   Motor Current Signature Analysis (MCSA) Test Bench UI
    ========================================================================== */
 
 :root {
-  --bg-app: #ECEEF2;
-  --bg-surface: #FFFFFF;
-  --bg-surface-subtle: #F8F9FB;
-  --bg-sidebar: #FFFFFF;
-  --border-subtle: #E2E5E9;
-  --border-strong: #CFD4DC;
-  --text-main: #0F172A;
-  --text-muted: #64748B;
-  --text-subtle: #94A3B8;
-
-  --accent-primary: #0F4C81;
-  --accent-primary-hover: #0A355C;
-  --accent-secondary: #0284C7;
-  --accent-light: #EBF3FA;
-
-  --status-normal: #15803D;
-  --status-normal-bg: #F0FDF4;
-  --status-normal-border: #BBF7D0;
-
-  --status-warning: #B45309;
-  --status-warning-bg: #FFFBEB;
-  --status-warning-border: #FDE68A;
-
-  --status-alarm: #B91C1C;
-  --status-alarm-bg: #FEF2F2;
-  --status-alarm-border: #FECACA;
+  --m1k-bg: #E2E4E8;
+  --m1k-panel: #EDEFF2;
+  --m1k-panel-border: #B0B5BC;
+  --m1k-screen-bg: #090D16;
+  --m1k-screen-grid: #172338;
+  --m1k-screen-text: #64B5F6;
+  --m1k-cha-color: #00E5FF;
+  --m1k-chb-color: #FFB300;
+  --m1k-alarm-color: #FF3D00;
+  --m1k-normal-color: #00E676;
+  --adi-blue: #003865;
+  --adi-dark: #001B3A;
 }
 
 *, *::before, *::after {
@@ -41,369 +27,276 @@
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  background-color: var(--bg-app);
-  color: var(--text-main);
+  font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
+  background-color: var(--m1k-bg);
+  color: #1A202C;
   margin: 0;
   padding: 0;
-  min-height: 100vh;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  height: 100vh;
+  overflow: hidden;
+  user-select: none;
 }
 
 .font-mono {
-  font-family: "JetBrains Mono", "SF Mono", Consolas, "Liberation Mono", Menlo, Courier, monospace !important;
+  font-family: "JetBrains Mono", "SF Mono", Consolas, monospace !important;
   font-variant-numeric: tabular-nums;
 }
 
-/* App Shell Structure */
-.app-shell {
+/* ALICE Workbench Shell */
+.m1k-workbench {
   display: flex;
   flex-direction: column;
   height: 100vh;
-  overflow: hidden;
-  background: var(--bg-app);
+  background: var(--m1k-bg);
 }
 
-/* Precision Instrument Header */
-.inst-header {
-  height: 50px;
-  background: #0F172A;
-  border-bottom: 1px solid #334155;
+/* Analog Devices Instrument Bar */
+.m1k-top-bar {
+  height: 44px;
+  background: linear-gradient(180deg, #002B49 0%, #001C30 100%);
+  border-bottom: 2px solid #001220;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
   color: #FFFFFF;
+}
+
+/* Hardware Menu Toolstrip */
+.m1k-toolstrip {
+  height: 36px;
+  background: #D5D8DE;
+  border-bottom: 1px solid #A0A5AD;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 16px;
-  flex-shrink: 0;
-  z-index: 30;
-}
-
-.inst-subnav {
-  height: 40px;
-  background: #FFFFFF;
-  border-bottom: 1px solid var(--border-strong);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 16px;
-  flex-shrink: 0;
-}
-
-.app-workspace {
-  display: flex;
-  flex: 1;
-  overflow: hidden;
-}
-
-/* Left Parameter & Telemetry Sidebar */
-.inst-sidebar {
-  width: 320px;
-  flex-shrink: 0;
-  overflow-y: auto;
-  background: #FFFFFF;
-  border-right: 1px solid var(--border-strong);
-}
-
-/* Main Engineering Canvas */
-.inst-canvas {
-  flex: 1;
-  overflow-y: auto;
-  padding: 16px 20px 40px 20px;
-}
-
-/* Precision Instrument Chassis Cards */
-.inst-panel {
-  background: #FFFFFF;
-  border: 1px solid var(--border-strong);
-  border-radius: 2px;
-  margin-bottom: 16px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
-}
-
-.inst-panel-header {
-  background: #F8FAFC;
-  border-bottom: 1px solid var(--border-strong);
-  padding: 8px 14px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-radius: 2px 2px 0 0;
-}
-
-.inst-panel-body {
-  padding: 14px;
-}
-
-/* Instrument Stage Badge */
-.stage-tag {
-  display: inline-flex;
-  align-items: center;
-  font-family: "JetBrains Mono", monospace;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  padding: 2px 6px;
-  border-radius: 2px;
-  background: #E2E8F0;
-  color: #334155;
-  border: 1px solid #CBD5E1;
-  margin-right: 8px;
-  text-transform: uppercase;
-}
-
-.stage-title-text {
-  font-size: 13px;
-  font-weight: 600;
-  color: #0F172A;
-  letter-spacing: -0.01em;
-}
-
-.stage-meta-text {
-  font-size: 11px;
-  color: #64748B;
-  font-family: "JetBrains Mono", monospace;
-}
-
-/* Form Controls */
-.inst-form-group {
-  margin-bottom: 10px;
-}
-
-.inst-label {
-  display: block;
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: #475569;
-  margin-bottom: 3px;
-}
-
-.inst-input {
-  width: 100%;
-  height: 30px;
-  padding: 4px 8px;
-  font-family: "JetBrains Mono", monospace;
-  font-size: 12px;
-  color: #0F172A;
-  background: #FFFFFF;
-  border: 1px solid #CBD5E1;
-  border-radius: 2px;
-  transition: border-color 0.15s;
-}
-
-.inst-input:focus {
-  outline: none;
-  border-color: #0284C7;
-  box-shadow: 0 0 0 1px #0284C7;
-}
-
-/* Industrial Buttons */
-.btn-inst-primary {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  height: 32px;
-  padding: 0 14px;
-  background: #0F4C81;
-  color: #FFFFFF;
-  border: 1px solid #0A355C;
-  border-radius: 2px;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  cursor: pointer;
-  transition: background 0.15s, border-color 0.15s;
-}
-
-.btn-inst-primary:hover:not(:disabled) {
-  background: #0A355C;
-}
-
-.btn-inst-primary:disabled {
-  background: #94A3B8;
-  border-color: #94A3B8;
-  cursor: not-allowed;
-}
-
-.btn-inst-secondary {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  height: 30px;
   padding: 0 10px;
-  background: #FFFFFF;
-  color: #334155;
-  border: 1px solid #CBD5E1;
-  border-radius: 2px;
+}
+
+/* Main Workbench Workspace */
+.m1k-workspace {
+  display: flex;
+  flex: 1;
+  overflow: hidden;
+  padding: 8px;
+  gap: 8px;
+}
+
+/* Right/Left Control Deck */
+.m1k-controls-deck {
+  width: 320px;
+  background: var(--m1k-panel);
+  border: 1px solid var(--m1k-panel-border);
+  border-radius: 3px;
+  box-shadow: inset 1px 1px 0 #FFFFFF, 1px 1px 3px rgba(0,0,0,0.15);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  flex-shrink: 0;
+}
+
+/* Central Instrument Screen Housing */
+.m1k-screen-housing {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: #1C2333;
+  border: 2px solid #333F56;
+  border-radius: 4px;
+  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.8), 0 2px 5px rgba(0,0,0,0.25);
+  overflow: hidden;
+}
+
+/* Screen Top Header */
+.m1k-screen-banner {
+  height: 28px;
+  background: #101624;
+  border-bottom: 1px solid #222E46;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  font-family: "JetBrains Mono", monospace;
   font-size: 11px;
-  font-weight: 500;
+  color: #81A1C1;
+}
+
+/* Screen Canvas Area */
+.m1k-screen-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+  background: var(--m1k-screen-bg);
+}
+
+/* ALICE Hardware Modules */
+.m1k-module {
+  background: #E4E7EC;
+  border: 1px solid #B4B9C2;
+  border-radius: 3px;
+  margin: 6px;
+  box-shadow: inset 1px 1px 0 #FFFFFF;
+}
+
+.m1k-module-title {
+  background: linear-gradient(180deg, #D0D4DC 0%, #B8BDC7 100%);
+  border-bottom: 1px solid #9AA0AA;
+  padding: 4px 8px;
+  font-size: 10px;
+  font-weight: 800;
+  color: #2D3748;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.m1k-module-body {
+  padding: 8px;
+}
+
+/* ALICE Buttons */
+.btn-m1k {
+  height: 26px;
+  padding: 0 10px;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 3px;
   cursor: pointer;
-  transition: all 0.15s;
-}
-
-.btn-inst-secondary:hover {
-  background: #F1F5F9;
-  color: #0F172A;
-  border-color: #94A3B8;
-}
-
-.btn-inst-secondary.active {
-  background: #0F4C81;
-  color: #FFFFFF;
-  border-color: #0F4C81;
-  font-weight: 600;
-}
-
-/* Navigation Tabs */
-.tab-inst {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  height: 40px;
-  padding: 0 14px;
-  font-size: 12px;
-  font-weight: 500;
-  color: #64748B;
-  background: transparent;
-  border: none;
-  border-bottom: 2px solid transparent;
+  justify-content: center;
+  gap: 4px;
+  transition: all 0.1s;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  border: 1px solid #808894;
+  background: linear-gradient(180deg, #FFFFFF 0%, #D8DCE3 100%);
+  color: #1A202C;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.btn-m1k:hover {
+  background: linear-gradient(180deg, #F0F4F8 0%, #C8CED8 100%);
+}
+
+.btn-m1k:active {
+  box-shadow: inset 0 1px 3px rgba(0,0,0,0.3);
+  background: #CCD2DC;
+}
+
+.btn-m1k-run {
+  background: linear-gradient(180deg, #10B981 0%, #059669 100%);
+  color: #FFFFFF;
+  border-color: #047857;
+  text-shadow: 0 -1px 0 rgba(0,0,0,0.3);
+}
+
+.btn-m1k-run:hover {
+  background: linear-gradient(180deg, #34D399 0%, #059669 100%);
+}
+
+.btn-m1k-stop {
+  background: linear-gradient(180deg, #EF4444 0%, #DC2626 100%);
+  color: #FFFFFF;
+  border-color: #B91C1C;
+  text-shadow: 0 -1px 0 rgba(0,0,0,0.3);
+}
+
+.btn-m1k-tab {
+  height: 28px;
+  padding: 0 12px;
+  font-size: 11px;
+  font-weight: 700;
+  background: #C4C8D0;
+  color: #334155;
+  border: 1px solid #9CA3AF;
+  border-bottom: none;
+  border-radius: 3px 3px 0 0;
+  margin-right: 3px;
   cursor: pointer;
-  transition: color 0.15s, border-color 0.15s;
-  letter-spacing: 0.01em;
 }
 
-.tab-inst:hover {
-  color: #0F172A;
+.btn-m1k-tab.active {
+  background: var(--m1k-panel);
+  color: #003865;
+  border-color: #808894;
+  box-shadow: inset 0 2px 0 #005A9C;
 }
 
-.tab-inst.active {
-  color: #0F4C81;
-  font-weight: 600;
-  border-bottom-color: #0F4C81;
-}
-
-/* Precision Tables */
-.inst-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 12px;
-}
-
-.inst-table th {
-  background: #F8FAFC;
-  color: #475569;
-  font-size: 10px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  padding: 6px 10px;
-  text-align: left;
-  border-bottom: 1px solid #CBD5E1;
-  border-top: 1px solid #CBD5E1;
-}
-
-.inst-table td {
-  padding: 6px 10px;
-  border-bottom: 1px solid #E2E8F0;
-  color: #1E293B;
-}
-
-.inst-table tr:hover td {
-  background: #F8FAFC;
-}
-
-/* Instrument Status Banner */
-.inst-banner {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 10px 14px;
-  border-radius: 2px;
-  font-size: 12px;
-  line-height: 1.4;
-  margin-bottom: 12px;
-}
-
-.inst-banner-alert {
-  background: #FEF2F2;
-  border: 1px solid #FECACA;
-  color: #991B1B;
-}
-
-.inst-banner-warning {
-  background: #FFFBEB;
-  border: 1px solid #FDE68A;
-  color: #92400E;
-}
-
-.inst-banner-info {
-  background: #F0F9FF;
-  border: 1px solid #BAE6FD;
-  color: #0369A1;
-}
-
-/* Telemetry Readout Block */
-.telemetry-cell {
-  background: #F8FAFC;
-  border: 1px solid #E2E8F0;
-  border-radius: 2px;
-  padding: 6px 8px;
-}
-
-.telemetry-label {
-  font-size: 9px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: #64748B;
-  margin-bottom: 2px;
-}
-
-.telemetry-val {
-  font-family: "JetBrains Mono", monospace;
-  font-size: 13px;
-  font-weight: 700;
-  color: #0F172A;
-}
-
-/* Hardware-style Spinner */
-@keyframes inst-spin {
-  to { transform: rotate(360deg); }
-}
-
-.inst-spinner {
-  width: 16px;
-  height: 16px;
-  border: 2px solid rgba(15, 76, 129, 0.2);
-  border-top-color: #0F4C81;
+/* LED Indicators */
+.m1k-led {
+  width: 9px;
+  height: 9px;
   border-radius: 50%;
-  animation: inst-spin 0.6s linear infinite;
+  border: 1px solid rgba(0,0,0,0.4);
   display: inline-block;
 }
 
-/* Modal Overlay */
-.inst-modal-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(15, 23, 42, 0.6);
-  backdrop-filter: blur(2px);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 100;
-  padding: 16px;
+.m1k-led-green {
+  background: #00E676;
+  box-shadow: 0 0 6px #00E676;
 }
 
-.inst-modal-window {
-  background: #FFFFFF;
-  border: 1px solid var(--border-strong);
-  border-radius: 2px;
-  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.25);
+.m1k-led-red {
+  background: #FF1744;
+  box-shadow: 0 0 6px #FF1744;
+}
+
+.m1k-led-amber {
+  background: #FFD600;
+  box-shadow: 0 0 6px #FFD600;
+}
+
+/* Input Fields */
+.m1k-input {
   width: 100%;
-  max-width: 580px;
-  overflow: hidden;
+  height: 24px;
+  padding: 2px 6px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 11px;
+  color: #0F172A;
+  background: #FFFFFF;
+  border: 1px solid #94A3B8;
+  border-radius: 2px;
+}
+
+.m1k-input:focus {
+  outline: none;
+  border-color: #005A9C;
+  box-shadow: 0 0 0 1px #005A9C;
+}
+
+/* Measurement Grid */
+.m1k-metric-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 3px 0;
+  font-size: 11px;
+  border-bottom: 1px solid #D5D9E0;
+}
+
+.m1k-metric-label {
+  color: #475569;
+}
+
+.m1k-metric-value {
+  font-family: "JetBrains Mono", monospace;
+  font-weight: 700;
+  color: #0F172A;
+}
+
+/* Bottom Status Bar */
+.m1k-statusbar {
+  height: 22px;
+  background: #C8CCD4;
+  border-top: 1px solid #A4A9B2;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 10px;
+  font-family: "JetBrains Mono", monospace;
+  font-size: 10px;
+  color: #334155;
 }

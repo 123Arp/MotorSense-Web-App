@@ -1,33 +1,33 @@
 ﻿import React, { useState } from 'react';
 import Plot from 'react-plotly.js';
 
-export const BASE_LAYOUT = {
-  paper_bgcolor: '#FFFFFF',
-  plot_bgcolor: '#FBFBFD',
-  font: { family: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif', color: '#334155', size: 11 },
+export const ALICE_SCREEN_LAYOUT = {
+  paper_bgcolor: '#090D16',
+  plot_bgcolor: '#090D16',
+  font: { family: 'JetBrains Mono, monospace', color: '#90CAF9', size: 10 },
   xaxis: {
-    gridcolor: '#E8ECEF',
-    linecolor: '#CBD5E1',
-    tickfont: { family: 'monospace', size: 10, color: '#475569' },
-    zerolinecolor: '#CBD5E1',
-    title: { font: { size: 11, color: '#475569' } }
+    gridcolor: '#152033',
+    linecolor: '#263852',
+    tickfont: { family: 'monospace', size: 9, color: '#64B5F6' },
+    zerolinecolor: '#263852',
+    title: { font: { size: 10, color: '#90CAF9' } },
   },
   yaxis: {
-    gridcolor: '#E8ECEF',
-    linecolor: '#CBD5E1',
-    tickfont: { family: 'monospace', size: 10, color: '#475569' },
-    zerolinecolor: '#CBD5E1',
-    title: { font: { size: 11, color: '#475569' } }
+    gridcolor: '#152033',
+    linecolor: '#263852',
+    tickfont: { family: 'monospace', size: 9, color: '#64B5F6' },
+    zerolinecolor: '#263852',
+    title: { font: { size: 10, color: '#90CAF9' } },
   },
-  margin: { l: 55, r: 25, t: 25, b: 45 },
+  margin: { l: 50, r: 20, t: 20, b: 40 },
   showlegend: true,
   legend: {
-    bgcolor: 'rgba(255, 255, 255, 0.95)',
-    bordercolor: '#CBD5E1',
+    bgcolor: 'rgba(9, 13, 22, 0.9)',
+    bordercolor: '#263852',
     borderwidth: 1,
-    font: { size: 10, family: 'monospace' },
+    font: { size: 9, color: '#E0E6ED', family: 'monospace' },
   },
-  hoverlabel: { bgcolor: '#0F172A', bordercolor: '#334155', font: { family: 'monospace', color: '#FFFFFF' } },
+  hoverlabel: { bgcolor: '#002B49', bordercolor: '#00E5FF', font: { family: 'monospace', color: '#FFFFFF' } },
 };
 
 export default function SpectrumChart({
@@ -38,14 +38,14 @@ export default function SpectrumChart({
   yZoom,
   xLabel = 'Frequency (Hz)',
   yLabel = 'Magnitude',
-  traceName = 'Spectrum',
-  traceColor = '#0F4C81',
+  traceName = 'CH A (FFT)',
+  traceColor = '#00E5FF',
   f_supply,
   f_sb_lower,
   f_sb_upper,
   extraTraces = [],
   defaultView = 'zoom',
-  height = 260,
+  height = 250,
 }) {
   const [view, setView] = useState(defaultView);
   const x = view === 'zoom' && xZoom && xZoom.length > 0 ? xZoom : xFull;
@@ -62,19 +62,18 @@ export default function SpectrumChart({
       yref: 'paper',
       y0: 0,
       y1: 1,
-      line: { color: '#0F4C81', width: 1.5, dash: 'solid' },
+      line: { color: '#2979FF', width: 1.5, dash: 'solid' },
     });
     annotations.push({
       x: f_supply,
       yref: 'paper',
       y: 0.96,
-      text: `<b>f₀: ${f_supply.toFixed(1)} Hz</b>`,
+      text: `f₀: ${f_supply.toFixed(1)}Hz`,
       showarrow: false,
-      font: { size: 9, color: '#0F4C81', family: 'monospace' },
-      bgcolor: 'rgba(255,255,255,0.95)',
-      bordercolor: '#0F4C81',
+      font: { size: 9, color: '#2979FF', family: 'monospace' },
+      bgcolor: 'rgba(9, 13, 22, 0.9)',
+      bordercolor: '#2979FF',
       borderwidth: 1,
-      borderpad: 2,
     });
   }
 
@@ -86,19 +85,18 @@ export default function SpectrumChart({
       yref: 'paper',
       y0: 0,
       y1: 1,
-      line: { color: '#B91C1C', width: 1.5, dash: 'dot' },
+      line: { color: '#FF1744', width: 1.5, dash: 'dot' },
     });
     annotations.push({
       x: f_sb_lower,
       yref: 'paper',
-      y: 0.82,
-      text: `<b>SB-: ${f_sb_lower.toFixed(2)} Hz</b>`,
+      y: 0.84,
+      text: `SB-: ${f_sb_lower.toFixed(2)}Hz`,
       showarrow: false,
-      font: { size: 9, color: '#B91C1C', family: 'monospace' },
-      bgcolor: 'rgba(255,255,255,0.95)',
-      bordercolor: '#B91C1C',
+      font: { size: 9, color: '#FF1744', family: 'monospace' },
+      bgcolor: 'rgba(9, 13, 22, 0.9)',
+      bordercolor: '#FF1744',
       borderwidth: 1,
-      borderpad: 2,
     });
   }
 
@@ -110,19 +108,18 @@ export default function SpectrumChart({
       yref: 'paper',
       y0: 0,
       y1: 1,
-      line: { color: '#B91C1C', width: 1.5, dash: 'dot' },
+      line: { color: '#FF1744', width: 1.5, dash: 'dot' },
     });
     annotations.push({
       x: f_sb_upper,
       yref: 'paper',
-      y: 0.82,
-      text: `<b>SB+: ${f_sb_upper.toFixed(2)} Hz</b>`,
+      y: 0.84,
+      text: `SB+: ${f_sb_upper.toFixed(2)}Hz`,
       showarrow: false,
-      font: { size: 9, color: '#B91C1C', family: 'monospace' },
-      bgcolor: 'rgba(255,255,255,0.95)',
-      bordercolor: '#B91C1C',
+      font: { size: 9, color: '#FF1744', family: 'monospace' },
+      bgcolor: 'rgba(9, 13, 22, 0.9)',
+      bordercolor: '#FF1744',
       borderwidth: 1,
-      borderpad: 2,
     });
   }
 
@@ -139,35 +136,49 @@ export default function SpectrumChart({
   ];
 
   const layout = {
-    ...BASE_LAYOUT,
+    ...ALICE_SCREEN_LAYOUT,
     height,
     shapes,
     annotations,
-    xaxis: { ...BASE_LAYOUT.xaxis, title: { text: xLabel, font: { size: 11, color: '#475569' } } },
-    yaxis: { ...BASE_LAYOUT.yaxis, title: { text: yLabel, font: { size: 11, color: '#475569' } } },
+    xaxis: { ...ALICE_SCREEN_LAYOUT.xaxis, title: { text: xLabel, font: { size: 10, color: '#90CAF9' } } },
+    yaxis: { ...ALICE_SCREEN_LAYOUT.yaxis, title: { text: yLabel, font: { size: 10, color: '#90CAF9' } } },
   };
 
   return (
-    <div>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '8px' }}>
-        <div style={{ fontSize: '12px', fontWeight: 600, color: '#1E293B', fontFamily: 'monospace' }}>{title}</div>
+    <div style={{ background: '#090D16', border: '1px solid #1F2C42', borderRadius: '2px', padding: '6px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px', padding: '0 4px' }}>
+        <div style={{ fontSize: '11px', fontWeight: 700, color: '#64B5F6', fontFamily: 'monospace' }}>
+          {title}
+        </div>
         {xZoom && xFull && (
           <div style={{ display: 'flex', gap: '4px' }}>
             <button
               type="button"
-              className={`btn-inst-secondary ${view === 'zoom' ? 'active' : ''}`}
-              style={{ height: '24px', fontSize: '10px', padding: '0 8px', fontFamily: 'monospace' }}
+              className="btn-m1k"
+              style={{
+                height: '20px', fontSize: '9px', padding: '0 6px',
+                background: view === 'zoom' ? '#00E5FF' : '#1A2333',
+                color: view === 'zoom' ? '#000000' : '#81A1C1',
+                borderColor: view === 'zoom' ? '#00B8D4' : '#2C3E5A',
+                fontWeight: 700
+              }}
               onClick={() => setView('zoom')}
             >
-              SPAN: ±50 Hz (CARRIER ZOOM)
+              ZOOM (±50 Hz)
             </button>
             <button
               type="button"
-              className={`btn-inst-secondary ${view === 'full' ? 'active' : ''}`}
-              style={{ height: '24px', fontSize: '10px', padding: '0 8px', fontFamily: 'monospace' }}
+              className="btn-m1k"
+              style={{
+                height: '20px', fontSize: '9px', padding: '0 6px',
+                background: view === 'full' ? '#00E5FF' : '#1A2333',
+                color: view === 'full' ? '#000000' : '#81A1C1',
+                borderColor: view === 'full' ? '#00B8D4' : '#2C3E5A',
+                fontWeight: 700
+              }}
               onClick={() => setView('full')}
             >
-              SPAN: FULL (0 - 25 kHz)
+              FULL SPAN (25 kHz)
             </button>
           </div>
         )}

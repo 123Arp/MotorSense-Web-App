@@ -1,7 +1,7 @@
 ﻿import React, { useState } from 'react';
 import Plot from 'react-plotly.js';
 import FileUpload from './FileUpload';
-import SpectrumChart, { BASE_LAYOUT } from './SpectrumChart';
+import SpectrumChart, { ALICE_SCREEN_LAYOUT } from './SpectrumChart';
 import VerdictBadge from './VerdictBadge';
 import FeatureTable from './FeatureTable';
 import ReportModal from './ReportModal';
@@ -47,7 +47,7 @@ export default function PipelineView({ params, updateParam }) {
       });
       setResult(res.data);
     } catch (err) {
-      const msg = err?.response?.data?.detail || err.message || 'Pipeline analysis failed';
+      const msg = err?.response?.data?.detail || err.message || 'Analysis error';
       setError(msg);
     } finally {
       setLoading(false);
@@ -70,7 +70,7 @@ export default function PipelineView({ params, updateParam }) {
       const res = await api.post('/api/sample/analyze', fd);
       setResult(res.data);
     } catch (err) {
-      const msg = err?.response?.data?.detail || err.message || 'Sample analysis failed';
+      const msg = err?.response?.data?.detail || err.message || 'Sample analysis error';
       setError(msg);
     } finally {
       setLoading(false);
@@ -84,102 +84,96 @@ export default function PipelineView({ params, updateParam }) {
   const thr = result?.threshold_dB ?? params.threshold_dB;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-      {/* Stage 0: File Ingestion Chassis */}
-      <div className="inst-panel">
-        <div className="inst-panel-header">
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <span className="stage-tag">STAGE 00</span>
-            <span className="stage-title-text">SIGNAL STREAM INGESTION & CHANNEL CONFIGURATION</span>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+      {/* File Acquisition Module */}
+      <div style={{ background: '#0F1523', border: '1px solid #223048', borderRadius: '3px', padding: '8px' }}>
+        <FileUpload
+          label=""
+          onColumnsReady={handleColumnsReady}
+          selectedColumn={column}
+          onColumnChange={handleColumnChange}
+          onSampleSelect={handleSampleSelect}
+        />
+
+        {fileMeta && (
+          <div style={{ marginTop: '6px', fontSize: '10px', color: '#64B5F6', fontFamily: 'monospace', display: 'flex', justifyContent: 'space-between', background: '#090E18', padding: '4px 8px', border: '1px solid #1C2B42', borderRadius: '2px' }}>
+            <span>BUFFER: <strong>{fileMeta.name}</strong></span>
+            <span>LENGTH: <strong>{fileMeta.nSamples?.toLocaleString()}</strong> SAMPLES ({((fileMeta.nSamples || 0) / params.fs).toFixed(2)}s)</span>
           </div>
-          <span className="stage-meta-text">CLOCK: {params.fs?.toLocaleString()} Hz</span>
-        </div>
-        <div className="inst-panel-body">
-          <FileUpload
-            label=""
-            onColumnsReady={handleColumnsReady}
-            selectedColumn={column}
-            onColumnChange={handleColumnChange}
-            onSampleSelect={handleSampleSelect}
-          />
+        )}
 
-          {fileMeta && (
-            <div style={{ marginTop: '10px', fontSize: '11px', color: '#475569', fontFamily: 'monospace', background: '#F8FAFC', padding: '6px 10px', border: '1px solid #E2E8F0', borderRadius: '2px', display: 'flex', justifyContent: 'space-between' }}>
-              <span>ACTIVE RECORDING: <strong>{fileMeta.name}</strong></span>
-              <span>SAMPLES: <strong>{fileMeta.nSamples?.toLocaleString()}</strong> ({((fileMeta.nSamples || 0) / params.fs).toFixed(2)}s duration)</span>
-            </div>
-          )}
-
-          {file && (
-            <div style={{ marginTop: '12px' }}>
-              <button
-                type="button"
-                className="btn-inst-primary"
-                style={{ width: '100%', height: '36px', fontSize: '13px' }}
-                onClick={() => runAnalysisWithFile(file)}
-                disabled={loading}
-              >
-                {loading ? (
-                  <>
-                    <div className="inst-spinner" />
-                    EXECUTING 7-STAGE DSP DIAGNOSTIC KERNEL...
-                  </>
-                ) : (
-                  'EXECUTE FULL MCSA DSP DIAGNOSTIC PIPELINE'
-                )}
-              </button>
-            </div>
-          )}
-        </div>
+        {file && (
+          <div style={{ marginTop: '8px', display: 'flex', gap: '6px' }}>
+            <button
+              type="button"
+              className="btn-m1k btn-m1k-run"
+              style={{ flex: 1, height: '32px', fontSize: '12px' }}
+              onClick={() => runAnalysisWithFile(file)}
+              disabled={loading}
+            >
+              {loading ? (
+                <>
+                  <div className="inst-spinner" style={{ borderTopColor: '#FFFFFF' }} />
+                  ACQUIRING &amp; PROCESSING MCSA WAVEFORMS...
+                </>
+              ) : (
+                '▶ RUN MCSA DIAGNOSTIC ACQUISITION'
+              )}
+            </button>
+          </div>
+        )}
       </div>
 
       {error && (
-        <div className="inst-banner inst-banner-alert">
-          <div><strong>Diagnostic Execution Failed:</strong> {error}</div>
+        <div style={{ background: '#3D0A14', border: '1px solid #FF1744', color: '#FF8A80', padding: '8px 10px', borderRadius: '2px', fontSize: '11px', fontFamily: 'monospace' }}>
+          ERROR: {error}
         </div>
       )}
 
       {loading && !result && (
-        <div className="inst-panel" style={{ padding: '32px', textAlign: 'center' }}>
-          <div className="inst-spinner" style={{ margin: '0 auto 12px auto', width: '32px', height: '32px' }} />
-          <div style={{ fontSize: '13px', fontWeight: 700, color: '#0F172A', fontFamily: 'monospace' }}>
-            COMPUTING FULL FREQUENCY-DOMAIN TRANSFORMATIONS...
-          </div>
-          <div style={{ fontSize: '11px', color: '#64748B', marginTop: '6px' }}>
-            Executing Butterworth SOS filter → Hann FFT (1M points) → Welch PSD averaging → Hilbert analytic demodulation
+        <div style={{ background: '#090D16', border: '1px solid #1D2A40', borderRadius: '3px', padding: '30px', textAlign: 'center' }}>
+          <div className="inst-spinner" style={{ width: '28px', height: '28px', borderTopColor: '#00E5FF', margin: '0 auto 8px auto' }} />
+          <div style={{ fontSize: '12px', fontFamily: 'monospace', color: '#00E5FF', fontWeight: 700 }}>
+            COMPUTING DSP PIPELINE TRANSFORMS (50 kS/s)...
           </div>
         </div>
       )}
 
       {/* Quality Check Warnings */}
       {result?.quality_check?.warnings?.length > 0 && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
           {result.quality_check.warnings.map((w, idx) => (
             <div
               key={idx}
-              className={`inst-banner ${w.severity === 'ERROR' ? 'inst-banner-alert' : 'inst-banner-warning'}`}
+              style={{
+                background: w.severity === 'ERROR' ? '#3B0F15' : '#3B2F0F',
+                border: `1px solid ${w.severity === 'ERROR' ? '#FF1744' : '#FFD600'}`,
+                color: w.severity === 'ERROR' ? '#FF8A80' : '#FFF59D',
+                padding: '6px 10px',
+                borderRadius: '2px',
+                fontSize: '10px',
+                fontFamily: 'monospace'
+              }}
             >
-              <div>
-                <strong style={{ fontFamily: 'monospace' }}>[{w.severity} — SIGNAL QUALITY CRITERION]:</strong> {w.message}
-              </div>
+              [{w.severity}]: {w.message}
             </div>
           ))}
         </div>
       )}
 
-      {/* 7-STAGE WALKTHROUGH */}
+      {/* 7-Stage Walkthrough */}
       {result && (
         <>
-          {/* Top Bar for Report Generation */}
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#F8FAFC', border: '1px solid #CBD5E1', padding: '10px 14px', borderRadius: '2px' }}>
-            <div>
-              <span style={{ fontSize: '12px', fontWeight: 700, color: '#0F172A', fontFamily: 'monospace' }}>
-                MCSA DIAGNOSTIC RESULT:
-              </span>{' '}
+          {/* Action Ribbon */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#121A2B', border: '1px solid #233452', padding: '6px 10px', borderRadius: '2px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <span style={{ fontSize: '11px', fontFamily: 'monospace', fontWeight: 700, color: '#90CAF9' }}>
+                EVALUATION RESULT:
+              </span>
               <span style={{
-                fontSize: '11px', fontWeight: 700, fontFamily: 'monospace', padding: '2px 8px', borderRadius: '2px',
-                background: result.verdict?.verdict === 'HEALTHY' ? '#DCFCE7' : '#FEE2E2',
-                color: result.verdict?.verdict === 'HEALTHY' ? '#15803D' : '#B91C1C'
+                fontSize: '10px', fontFamily: 'monospace', fontWeight: 700, padding: '2px 8px', borderRadius: '2px',
+                background: result.verdict?.verdict === 'HEALTHY' ? '#00E676' : '#FF1744',
+                color: '#000000'
               }}>
                 {result.verdict?.label} ({result.features?.worst_sideband_dB?.toFixed(2)} dBFS)
               </span>
@@ -188,225 +182,154 @@ export default function PipelineView({ params, updateParam }) {
             <button
               type="button"
               onClick={() => setIsReportOpen(true)}
-              className="btn-inst-secondary"
-              style={{ background: '#0F4C81', color: '#FFFFFF', borderColor: '#0A355C', fontWeight: 600 }}
+              className="btn-m1k"
+              style={{ background: '#005A9C', color: '#FFFFFF', borderColor: '#0084E3' }}
             >
-              <DownloadIcon className="w-3.5 h-3.5" />
-              GENERATE ISO 20958 DIAGNOSTIC SHEET
+              <DownloadIcon className="w-3 h-3" />
+              PRINT ISO 20958 REPORT
             </button>
           </div>
 
-          {/* STAGE 1: RAW SIGNAL */}
-          <div className="inst-panel">
-            <div className="inst-panel-header">
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span className="stage-tag">STAGE 01</span>
-                <WaveformIcon className="w-4 h-4 text-slate-700" />
-                <span className="stage-title-text">RAW STATOR CURRENT WAVEFORM — TIME DOMAIN</span>
-              </div>
-              <span className="stage-meta-text">
-                DISPLAY: {result.raw_signal?.display_window_ms} ms · TOTAL: {result.raw_signal?.total_samples?.toLocaleString()} PTS ({result.raw_signal?.duration_s}s)
+          {/* STAGE 1: Oscilloscope Time Domain */}
+          <div style={{ background: '#090D16', border: '1px solid #1C293E', borderRadius: '3px', padding: '6px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px', padding: '0 4px' }}>
+              <span style={{ fontSize: '11px', fontFamily: 'monospace', fontWeight: 700, color: '#00E5FF' }}>
+                STAGE 01: TIME-DOMAIN OSCILLOSCOPE TRACE (CH A: {column})
+              </span>
+              <span style={{ fontSize: '10px', fontFamily: 'monospace', color: '#64B5F6' }}>
+                WINDOW: {result.raw_signal?.display_window_ms} ms · TOTAL PTS: {result.raw_signal?.total_samples?.toLocaleString()}
               </span>
             </div>
-            <div className="inst-panel-body">
-              <Plot
-                data={[{
-                  x: result.raw_signal?.t,
-                  y: result.raw_signal?.x,
+            <Plot
+              data={[{
+                x: result.raw_signal?.t,
+                y: result.raw_signal?.x,
+                type: 'scatter',
+                mode: 'lines',
+                name: `CH A (${column})`,
+                line: { color: '#00E5FF', width: 1.5 },
+              }]}
+              layout={{
+                ...ALICE_SCREEN_LAYOUT,
+                height: 190,
+                xaxis: { ...ALICE_SCREEN_LAYOUT.xaxis, title: { text: 'Time (seconds)', font: { size: 10, color: '#90CAF9' } } },
+                yaxis: { ...ALICE_SCREEN_LAYOUT.yaxis, title: { text: 'Current (A)', font: { size: 10, color: '#90CAF9' } } },
+              }}
+              config={{ responsive: true, displayModeBar: true, displaylogo: false, scrollZoom: true }}
+              style={{ width: '100%' }}
+              useResizeHandler
+            />
+          </div>
+
+          {/* STAGE 2: Filtered vs Raw */}
+          <div style={{ background: '#090D16', border: '1px solid #1C293E', borderRadius: '3px', padding: '6px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px', padding: '0 4px' }}>
+              <span style={{ fontSize: '11px', fontFamily: 'monospace', fontWeight: 700, color: '#FFB300' }}>
+                STAGE 02: BUTTERWORTH SOS BANDPASS FILTER (1.0 - 200.0 Hz)
+              </span>
+              <span style={{ fontSize: '10px', fontFamily: 'monospace', color: '#64B5F6' }}>
+                ZERO-PHASE CASCADE · ORDER 4
+              </span>
+            </div>
+            <Plot
+              data={[
+                {
+                  x: result.filtered_signal?.t,
+                  y: result.filtered_signal?.raw,
                   type: 'scatter',
                   mode: 'lines',
-                  name: `Raw Current (${column})`,
-                  line: { color: '#475569', width: 1.2 },
-                }]}
-                layout={{
-                  ...BASE_LAYOUT,
-                  height: 200,
-                  xaxis: { ...BASE_LAYOUT.xaxis, title: { text: 'Time (seconds)', font: { size: 11, color: '#475569' } } },
-                  yaxis: { ...BASE_LAYOUT.yaxis, title: { text: 'Current (Amperes)', font: { size: 11, color: '#475569' } } },
-                }}
-                config={{ responsive: true, displayModeBar: true, displaylogo: false, scrollZoom: true }}
-                style={{ width: '100%' }}
-                useResizeHandler
-              />
-            </div>
+                  name: 'Raw Unfiltered',
+                  opacity: 0.35,
+                  line: { color: '#78909C', width: 1 },
+                },
+                {
+                  x: result.filtered_signal?.t,
+                  y: result.filtered_signal?.filtered,
+                  type: 'scatter',
+                  mode: 'lines',
+                  name: 'SOS Filtered Stator Current',
+                  line: { color: '#FFB300', width: 1.5 },
+                },
+              ]}
+              layout={{
+                ...ALICE_SCREEN_LAYOUT,
+                height: 190,
+                xaxis: { ...ALICE_SCREEN_LAYOUT.xaxis, title: { text: 'Time (seconds)', font: { size: 10, color: '#90CAF9' } } },
+                yaxis: { ...ALICE_SCREEN_LAYOUT.yaxis, title: { text: 'Current (A)', font: { size: 10, color: '#90CAF9' } } },
+              }}
+              config={{ responsive: true, displayModeBar: true, displaylogo: false, scrollZoom: true }}
+              style={{ width: '100%' }}
+              useResizeHandler
+            />
           </div>
 
-          {/* STAGE 2: BANDPASS FILTER */}
-          <div className="inst-panel">
-            <div className="inst-panel-header">
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span className="stage-tag">STAGE 02</span>
-                <FilterIcon className="w-4 h-4 text-slate-700" />
-                <span className="stage-title-text">CASCADED SECOND-ORDER-SECTIONS (SOS) BUTTERWORTH FILTER</span>
-              </div>
-              <span className="stage-meta-text">
-                PASSBAND: {result.filtered_signal?.low_cut_hz} Hz – {result.filtered_signal?.high_cut_hz} Hz · ORDER: {result.filtered_signal?.order} · ZERO-PHASE
-              </span>
-            </div>
-            <div className="inst-panel-body">
-              <Plot
-                data={[
-                  {
-                    x: result.filtered_signal?.t,
-                    y: result.filtered_signal?.raw,
-                    type: 'scatter',
-                    mode: 'lines',
-                    name: 'Raw Unfiltered',
-                    opacity: 0.35,
-                    line: { color: '#94A3B8', width: 1 },
-                  },
-                  {
-                    x: result.filtered_signal?.t,
-                    y: result.filtered_signal?.filtered,
-                    type: 'scatter',
-                    mode: 'lines',
-                    name: 'SOS Filtered Stator Current',
-                    line: { color: '#0F4C81', width: 1.5 },
-                  },
-                ]}
-                layout={{
-                  ...BASE_LAYOUT,
-                  height: 200,
-                  xaxis: { ...BASE_LAYOUT.xaxis, title: { text: 'Time (seconds)', font: { size: 11, color: '#475569' } } },
-                  yaxis: { ...BASE_LAYOUT.yaxis, title: { text: 'Filtered Current (Amperes)', font: { size: 11, color: '#475569' } } },
-                }}
-                config={{ responsive: true, displayModeBar: true, displaylogo: false, scrollZoom: true }}
-                style={{ width: '100%' }}
-                useResizeHandler
-              />
-            </div>
+          {/* STAGE 3: FFT Spectrum */}
+          <div style={{ background: '#090D16', border: '1px solid #1C293E', borderRadius: '3px', padding: '6px' }}>
+            <SpectrumChart
+              title="STAGE 03: HANN-WINDOWED DISCRETE FOURIER TRANSFORM (FFT SPECTRUM)"
+              xFull={result.fft?.freqs_full}
+              yFull={result.fft?.mag_full}
+              xZoom={result.fft?.freqs_zoom}
+              yZoom={result.fft?.mag_zoom}
+              xLabel="Frequency (Hz)"
+              yLabel="Amplitude (Arms)"
+              traceName={`FFT (${column})`}
+              traceColor="#00E5FF"
+              f_supply={f0}
+              f_sb_lower={sbLo}
+              f_sb_upper={sbHi}
+              height={240}
+            />
           </div>
 
-          {/* STAGE 3: FFT SPECTRUM */}
-          <div className="inst-panel">
-            <div className="inst-panel-header">
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span className="stage-tag">STAGE 03</span>
-                <SpectrumIcon className="w-4 h-4 text-slate-700" />
-                <span className="stage-title-text">HANN-WINDOWED DISCRETE FOURIER TRANSFORM (FFT)</span>
-              </div>
-              <span className="stage-meta-text">
-                BIN RESOLUTION: Δf = {result.fft?.freq_resolution_hz?.toFixed(4)} Hz · LEAKAGE ATTENUATION: ~-31 dB
-              </span>
-            </div>
-            <div className="inst-panel-body">
-              <SpectrumChart
-                title="METHOD 1: AMPLITUDE SPECTRUM (PEAK NORMALIZED)"
-                xFull={result.fft?.freqs_full}
-                yFull={result.fft?.mag_full}
-                xZoom={result.fft?.freqs_zoom}
-                yZoom={result.fft?.mag_zoom}
-                xLabel="Frequency (Hz)"
-                yLabel="Amplitude (Arms)"
-                traceName={`FFT Spectrum (${column})`}
-                traceColor="#0F4C81"
-                f_supply={f0}
-                f_sb_lower={sbLo}
-                f_sb_upper={sbHi}
-                height={260}
-              />
-            </div>
+          {/* STAGE 4: Welch PSD */}
+          <div style={{ background: '#090D16', border: '1px solid #1C293E', borderRadius: '3px', padding: '6px' }}>
+            <SpectrumChart
+              title="STAGE 04: WELCH POWER SPECTRAL DENSITY ESTIMATE (PSD)"
+              xFull={result.welch_psd?.freqs_full}
+              yFull={result.welch_psd?.psd_db_full}
+              xZoom={result.welch_psd?.freqs_zoom}
+              yZoom={result.welch_psd?.psd_db_zoom}
+              xLabel="Frequency (Hz)"
+              yLabel="PSD (dB/Hz)"
+              traceName={`Welch (${column})`}
+              traceColor="#B388FF"
+              f_supply={f0}
+              f_sb_lower={sbLo}
+              f_sb_upper={sbHi}
+              height={240}
+            />
           </div>
 
-          {/* STAGE 4: WELCH PSD */}
-          <div className="inst-panel">
-            <div className="inst-panel-header">
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span className="stage-tag">STAGE 04</span>
-                <PsdIcon className="w-4 h-4 text-slate-700" />
-                <span className="stage-title-text">WELCH POWER SPECTRAL DENSITY (PSD) ESTIMATION</span>
-              </div>
-              <span className="stage-meta-text">
-                WINDOW: HANN · SEGMENTS: 50% OVERLAP · STATISTICAL VARIANCE REDUCTION
-              </span>
-            </div>
-            <div className="inst-panel-body">
-              <SpectrumChart
-                title="METHOD 2: AVERAGED POWER DENSITY ESTIMATE (dBFS/Hz)"
-                xFull={result.welch_psd?.freqs_full}
-                yFull={result.welch_psd?.psd_db_full}
-                xZoom={result.welch_psd?.freqs_zoom}
-                yZoom={result.welch_psd?.psd_db_zoom}
-                xLabel="Frequency (Hz)"
-                yLabel="Power Spectral Density (dB/Hz)"
-                traceName={`Welch PSD (${column})`}
-                traceColor="#5B21B6"
-                f_supply={f0}
-                f_sb_lower={sbLo}
-                f_sb_upper={sbHi}
-                height={260}
-              />
-            </div>
+          {/* STAGE 5: Hilbert Envelope */}
+          <div style={{ background: '#090D16', border: '1px solid #1C293E', borderRadius: '3px', padding: '6px' }}>
+            <SpectrumChart
+              title="STAGE 05: HILBERT TRANSFORM DEMODULATED ENVELOPE SPECTRUM"
+              xFull={result.hilbert_envelope?.freqs_full}
+              yFull={result.hilbert_envelope?.mag_full}
+              xZoom={result.hilbert_envelope?.freqs_zoom}
+              yZoom={result.hilbert_envelope?.mag_zoom}
+              xLabel="Modulation Frequency (Hz)"
+              yLabel="Envelope Magnitude"
+              traceName={`Envelope (${column})`}
+              traceColor="#FFD600"
+              f_supply={f0}
+              f_sb_lower={sbLo}
+              f_sb_upper={sbHi}
+              defaultView="full"
+              height={240}
+            />
           </div>
 
-          {/* STAGE 5: HILBERT ENVELOPE */}
-          <div className="inst-panel">
-            <div className="inst-panel-header">
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span className="stage-tag">STAGE 05</span>
-                <EnvelopeIcon className="w-4 h-4 text-slate-700" />
-                <span className="stage-title-text">HILBERT TRANSFORM DEMODULATED ENVELOPE SPECTRUM</span>
-              </div>
-              <span className="stage-meta-text">
-                ANALYTIC: |z(t)| → ZERO-DC → FFT · MECHANICAL FAULT AM DEMODULATION
-              </span>
-            </div>
-            <div className="inst-panel-body">
-              <SpectrumChart
-                title="METHOD 3: DEMODULATED AMPLITUDE MODULATION ENVELOPE"
-                xFull={result.hilbert_envelope?.freqs_full}
-                yFull={result.hilbert_envelope?.mag_full}
-                xZoom={result.hilbert_envelope?.freqs_zoom}
-                yZoom={result.hilbert_envelope?.mag_zoom}
-                xLabel="Modulation Frequency (Hz)"
-                yLabel="Envelope Magnitude"
-                traceName={`Envelope Spectrum (${column})`}
-                traceColor="#B45309"
-                f_supply={f0}
-                f_sb_lower={sbLo}
-                f_sb_upper={sbHi}
-                defaultView="full"
-                height={260}
-              />
-            </div>
-          </div>
+          {/* STAGE 6: Feature Extraction Table */}
+          <FeatureTable
+            features={result.features}
+            sidebandInfo={result.sideband_info}
+            thresholdDB={thr}
+          />
 
-          {/* STAGE 6: FEATURE EXTRACTION */}
-          <div className="inst-panel">
-            <div className="inst-panel-header">
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span className="stage-tag">STAGE 06</span>
-                <TableIcon className="w-4 h-4 text-slate-700" />
-                <span className="stage-title-text">FEATURE EXTRACTION & DECIBEL LEVEL NORMALIZATION</span>
-              </div>
-              <span className="stage-meta-text">
-                PEAK SEARCH: ±2.0 Hz WINDOW · METRIC: L_dB = 20·log₁₀(A_sb / A_fund)
-              </span>
-            </div>
-            <div className="inst-panel-body">
-              <FeatureTable
-                features={result.features}
-                sidebandInfo={result.sideband_info}
-                thresholdDB={thr}
-              />
-            </div>
-          </div>
-
-          {/* STAGE 7: HEALTH VERDICT */}
-          <div className="inst-panel">
-            <div className="inst-panel-header">
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <span className="stage-tag">STAGE 07</span>
-                <span className="stage-title-text">DIAGNOSTIC HEALTH VERDICT & MACHINERY ASSESSMENT</span>
-              </div>
-              <span className="stage-meta-text">
-                THRESHOLD BOUNDARY: {thr} dBFS · ISO 20958 CONFORMANCE
-              </span>
-            </div>
-            <div className="inst-panel-body">
-              <VerdictBadge verdict={result.verdict} thresholdDB={thr} />
-            </div>
-          </div>
+          {/* STAGE 7: Verdict */}
+          <VerdictBadge verdict={result.verdict} thresholdDB={thr} />
         </>
       )}
 
