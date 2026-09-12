@@ -1,398 +1,334 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
 
-/* ==========================================================================
-   MOTORSENSE™ MCSA INDUSTRIAL ANALYZER
-   Virtual Bench Instrumentation Design System
-   ========================================================================== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 :root {
-  --m1k-bg: #E2E4E8;
-  --m1k-panel: #EDEFF2;
-  --m1k-panel-border: #B0B5BC;
-  --m1k-screen-bg: #090D16;
-  --m1k-screen-grid: #172338;
-  --m1k-screen-text: #64B5F6;
-  --m1k-cha-color: #00E5FF;
-  --m1k-chb-color: #FFB300;
-  --m1k-alarm-color: #FF3D00;
-  --m1k-normal-color: #00E676;
+  --bg-base:    #0a0f1e;
+  --bg-surface: #111827;
+  --bg-card:    #1a2236;
+  --bg-input:   #0f172a;
+  --border:     #1e2d4a;
+  --border-2:   #253554;
+  --text-1:     #f1f5f9;
+  --text-2:     #94a3b8;
+  --text-3:     #64748b;
+  --accent:     #3b82f6;
+  --accent-light: #60a5fa;
+  --accent-glow: rgba(59,130,246,0.15);
+  --green:      #22c55e;
+  --green-dim:  #14532d;
+  --red:        #ef4444;
+  --red-dim:    #450a0a;
+  --amber:      #f59e0b;
+  --amber-dim:  #451a03;
+  --cyan:       #06b6d4;
+  --purple:     #8b5cf6;
+  --font-sans:  'Inter', system-ui, sans-serif;
+  --font-mono:  'JetBrains Mono', monospace;
+  --radius:     8px;
+  --radius-sm:  6px;
+  --radius-lg:  12px;
+  --shadow:     0 1px 3px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.3);
+  --shadow-md:  0 4px 6px rgba(0,0,0,0.4), 0 2px 4px rgba(0,0,0,0.3);
 }
 
-*, *::before, *::after {
-  box-sizing: border-box;
-}
+html, body { height: 100%; background: var(--bg-base); color: var(--text-1); font-family: var(--font-sans); font-size: 14px; line-height: 1.5; -webkit-font-smoothing: antialiased; }
+#root { height: 100%; }
 
-body {
-  font-family: "Segoe UI", -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
-  background-color: var(--m1k-bg);
-  color: #1A202C;
-  margin: 0;
-  padding: 0;
-  height: 100vh;
-  overflow: hidden;
-  font-size: 13px;
-}
+/* Scrollbars */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: var(--bg-base); }
+::-webkit-scrollbar-thumb { background: var(--border-2); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: var(--text-3); }
 
-.font-mono {
-  font-family: "JetBrains Mono", "SF Mono", Consolas, monospace !important;
-  font-variant-numeric: tabular-nums;
-}
+/* ── Layout ────────────────────────────────────────────────────────── */
+.ms-app { display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
 
-/* Workbench Shell */
-.m1k-workbench {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  background: var(--m1k-bg);
-}
-
-/* Precision Top Instrument Bar */
-.m1k-top-bar {
-  height: 52px;
-  background: linear-gradient(180deg, #00223A 0%, #001524 100%);
-  border-bottom: 2px solid #000E18;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 16px;
-  color: #FFFFFF;
-}
-
-/* Hardware Menu Toolstrip */
-.m1k-toolstrip {
-  height: 38px;
-  background: #D5D8DE;
-  border-bottom: 1px solid #A0A5AD;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 14px;
-}
-
-/* Main Workbench Workspace */
-.m1k-workspace {
-  display: flex;
-  flex: 1;
-  overflow: hidden;
-  padding: 8px;
-  gap: 8px;
-}
-
-/* Left Parameter Controls Deck */
-.m1k-controls-deck {
-  width: 320px;
-  background: var(--m1k-panel);
-  border: 1px solid var(--m1k-panel-border);
-  border-radius: 4px;
-  box-shadow: inset 1px 1px 0 #FFFFFF, 1px 1px 3px rgba(0,0,0,0.15);
-  display: flex;
-  flex-direction: column;
-  overflow-y: auto;
+/* ── Header ────────────────────────────────────────────────────────── */
+.ms-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 20px; height: 56px;
+  background: var(--bg-surface);
+  border-bottom: 1px solid var(--border);
   flex-shrink: 0;
+  z-index: 50;
 }
-
-/* Central Instrument Screen Housing */
-.m1k-screen-housing {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  background: #1C2333;
-  border: 2px solid #333F56;
-  border-radius: 4px;
-  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.8), 0 2px 5px rgba(0,0,0,0.25);
-  overflow: hidden;
+.ms-header-left { display: flex; align-items: center; gap: 12px; }
+.ms-logo-ring {
+  width: 36px; height: 36px; border-radius: 10px;
+  background: linear-gradient(135deg, #1d4ed8, #0ea5e9);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0; box-shadow: 0 0 0 1px rgba(59,130,246,0.3), 0 0 12px rgba(59,130,246,0.15);
 }
-
-/* Screen Top Header */
-.m1k-screen-banner {
-  height: 32px;
-  background: #101624;
-  border-bottom: 1px solid #222E46;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 14px;
-  font-family: "JetBrains Mono", monospace;
-  font-size: 12px;
-  color: #81A1C1;
-}
-
-/* Screen Canvas Area */
-.m1k-screen-content {
-  flex: 1;
-  overflow-y: auto;
-  padding: 12px;
-  background: var(--m1k-screen-bg);
-}
-
-/* Hardware Control Modules */
-.m1k-module {
-  background: #E4E7EC;
-  border: 1px solid #B4B9C2;
-  border-radius: 4px;
-  margin: 6px;
-  box-shadow: inset 1px 1px 0 #FFFFFF;
-}
-
-.m1k-module-title {
-  background: linear-gradient(180deg, #D0D4DC 0%, #B8BDC7 100%);
-  border-bottom: 1px solid #9AA0AA;
-  padding: 6px 10px;
-  font-size: 11px;
-  font-weight: 800;
-  color: #1E293B;
-  letter-spacing: 0.06em;
+.ms-brand-name { font-size: 17px; font-weight: 700; color: var(--text-1); letter-spacing: 0.01em; }
+.ms-brand-sub { font-size: 11px; color: var(--text-3); font-weight: 400; margin-top: 1px; }
+.ms-badge {
+  font-size: 10px; font-weight: 600; padding: 2px 8px; border-radius: 99px;
+  background: rgba(59,130,246,0.1); color: var(--accent-light);
+  border: 1px solid rgba(59,130,246,0.25); letter-spacing: 0.04em;
   text-transform: uppercase;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+}
+.ms-header-right { display: flex; align-items: center; gap: 10px; }
+.ms-status-btn {
+  display: flex; align-items: center; gap: 7px;
+  padding: 6px 14px; border-radius: var(--radius-sm);
+  font-size: 13px; font-weight: 500; cursor: pointer;
+  border: 1px solid var(--border-2); background: var(--bg-card);
+  color: var(--text-2); transition: all 0.15s; font-family: var(--font-sans);
+}
+.ms-status-btn:hover { border-color: var(--accent); color: var(--text-1); }
+.ms-status-btn.online { border-color: rgba(34,197,94,0.35); background: rgba(34,197,94,0.06); color: var(--green); }
+.ms-status-btn.offline { border-color: rgba(239,68,68,0.35); background: rgba(239,68,68,0.06); color: var(--red); }
+.ms-dot { width: 7px; height: 7px; border-radius: 99px; flex-shrink: 0; }
+.ms-dot.green { background: var(--green); box-shadow: 0 0 6px var(--green); }
+.ms-dot.red { background: var(--red); box-shadow: 0 0 6px var(--red); }
+.ms-dot.amber { background: var(--amber); box-shadow: 0 0 6px var(--amber); animation: pulse 1.2s infinite; }
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+/* ── Tabs / Nav ────────────────────────────────────────────────────── */
+.ms-nav {
+  display: flex; align-items: center; gap: 4px;
+  padding: 0 20px;
+  height: 46px; background: var(--bg-surface);
+  border-bottom: 1px solid var(--border); flex-shrink: 0;
+}
+.ms-tab {
+  display: flex; align-items: center; gap: 6px;
+  padding: 6px 14px; border-radius: var(--radius-sm);
+  font-size: 13px; font-weight: 500; cursor: pointer;
+  border: none; background: transparent; color: var(--text-3);
+  transition: all 0.15s; position: relative;
+}
+.ms-tab:hover { color: var(--text-2); background: rgba(255,255,255,0.04); }
+.ms-tab.active { color: var(--accent-light); background: var(--accent-glow); }
+.ms-tab.active::after {
+  content: ''; position: absolute; bottom: -7px; left: 14px; right: 14px;
+  height: 2px; background: var(--accent); border-radius: 99px;
 }
 
-.m1k-module-body {
-  padding: 10px;
+/* ── Main body ─────────────────────────────────────────────────────── */
+.ms-body { display: flex; flex: 1; overflow: hidden; }
+.ms-sidebar {
+  width: 248px; flex-shrink: 0; overflow-y: auto;
+  background: var(--bg-surface); border-right: 1px solid var(--border);
+  padding: 14px 12px; display: flex; flex-direction: column; gap: 16px;
+}
+.ms-main { flex: 1; overflow-y: auto; padding: 16px; display: flex; flex-direction: column; gap: 14px; }
+
+/* ── Cards ─────────────────────────────────────────────────────────── */
+.ms-card {
+  background: var(--bg-card); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); overflow: hidden;
+}
+.ms-card-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 16px; border-bottom: 1px solid var(--border);
+}
+.ms-card-title { font-size: 13px; font-weight: 600; color: var(--text-1); display: flex; align-items: center; gap: 8px; }
+.ms-card-body { padding: 14px 16px; }
+
+/* ── Section label (sidebar) ───────────────────────────────────────── */
+.ms-section-label {
+  font-size: 10px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase;
+  color: var(--text-3); padding: 0 4px; margin-bottom: -4px;
 }
 
-/* Tactile Push Buttons */
-.btn-m1k {
-  height: 30px;
-  padding: 0 12px;
-  font-size: 12px;
-  font-weight: 700;
-  border-radius: 3px;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  transition: all 0.1s;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  border: 1px solid #808894;
-  background: linear-gradient(180deg, #FFFFFF 0%, #D8DCE3 100%);
-  color: #1A202C;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+/* ── Form elements ─────────────────────────────────────────────────── */
+.ms-label { font-size: 12px; font-weight: 500; color: var(--text-2); margin-bottom: 4px; display: block; }
+.ms-input {
+  width: 100%; padding: 7px 10px; font-size: 13px;
+  background: var(--bg-input); border: 1px solid var(--border-2);
+  border-radius: var(--radius-sm); color: var(--text-1);
+  font-family: var(--font-mono); outline: none; transition: border 0.15s;
+  -moz-appearance: textfield;
 }
+.ms-input::-webkit-outer-spin-button,
+.ms-input::-webkit-inner-spin-button { -webkit-appearance: none; }
+.ms-input:focus { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-glow); }
+.ms-field { margin-bottom: 10px; }
+.ms-field-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+.ms-unit { font-size: 11px; color: var(--text-3); font-family: var(--font-mono); }
 
-.btn-m1k:hover {
-  background: linear-gradient(180deg, #F0F4F8 0%, #C8CED8 100%);
+/* ── Buttons ───────────────────────────────────────────────────────── */
+.ms-btn {
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 7px 14px; border-radius: var(--radius-sm);
+  font-size: 13px; font-weight: 500; cursor: pointer;
+  border: 1px solid var(--border-2); background: var(--bg-card); color: var(--text-2);
+  font-family: var(--font-sans); transition: all 0.15s; white-space: nowrap;
 }
-
-.btn-m1k:active {
-  box-shadow: inset 0 1px 3px rgba(0,0,0,0.3);
-  background: #CCD2DC;
+.ms-btn:hover:not(:disabled) { border-color: var(--accent); color: var(--text-1); background: var(--accent-glow); }
+.ms-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.ms-btn-primary {
+  background: var(--accent); border-color: var(--accent); color: #fff;
 }
+.ms-btn-primary:hover:not(:disabled) { background: #2563eb; border-color: #2563eb; }
+.ms-btn-sm { padding: 5px 10px; font-size: 12px; }
+.ms-btn-xs { padding: 3px 8px; font-size: 11px; border-radius: 5px; }
+.ms-btn-green { background: rgba(34,197,94,0.12); border-color: rgba(34,197,94,0.3); color: var(--green); }
+.ms-btn-green:hover:not(:disabled) { background: rgba(34,197,94,0.2); border-color: var(--green); }
+.ms-btn-red { background: rgba(239,68,68,0.1); border-color: rgba(239,68,68,0.25); color: var(--red); }
+.ms-btn-red:hover:not(:disabled) { background: rgba(239,68,68,0.18); border-color: var(--red); }
 
-.btn-m1k-run {
-  background: linear-gradient(180deg, #10B981 0%, #059669 100%);
-  color: #FFFFFF;
-  border-color: #047857;
-  text-shadow: 0 -1px 0 rgba(0,0,0,0.3);
+/* ── Kinematics table ──────────────────────────────────────────────── */
+.ms-kine-row { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid var(--border); }
+.ms-kine-row:last-child { border-bottom: none; }
+.ms-kine-label { font-size: 11px; color: var(--text-3); }
+.ms-kine-value { font-size: 11px; font-family: var(--font-mono); color: var(--accent-light); font-weight: 500; }
+
+/* ── Upload zone ───────────────────────────────────────────────────── */
+.ms-dropzone {
+  border: 1.5px dashed var(--border-2); border-radius: var(--radius);
+  padding: 28px 20px; text-align: center; cursor: pointer;
+  transition: all 0.15s; background: var(--bg-input);
 }
+.ms-dropzone:hover, .ms-dropzone.dragover { border-color: var(--accent); background: var(--accent-glow); }
+.ms-dropzone.has-file { border-color: rgba(34,197,94,0.4); border-style: solid; background: rgba(34,197,94,0.04); }
 
-.btn-m1k-run:hover {
-  background: linear-gradient(180deg, #34D399 0%, #059669 100%);
+/* ── Channel pill selector ─────────────────────────────────────────── */
+.ms-channel-pill {
+  padding: 4px 10px; border-radius: 99px; font-size: 11px; font-weight: 600;
+  font-family: var(--font-mono); cursor: pointer; transition: all 0.12s;
+  border: 1px solid var(--border-2); background: var(--bg-input); color: var(--text-3);
 }
+.ms-channel-pill.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+.ms-channel-pill.current-type:not(.active) { border-color: rgba(59,130,246,0.3); color: var(--accent-light); }
 
-.btn-m1k-tab {
-  height: 30px;
-  padding: 0 14px;
-  font-size: 12px;
-  font-weight: 700;
-  background: #C4C8D0;
-  color: #334155;
-  border: 1px solid #9CA3AF;
-  border-bottom: none;
-  border-radius: 4px 4px 0 0;
-  margin-right: 4px;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
+/* ── Alert / error ─────────────────────────────────────────────────── */
+.ms-alert {
+  padding: 10px 14px; border-radius: var(--radius-sm); font-size: 13px;
+  display: flex; align-items: flex-start; gap: 8px;
 }
+.ms-alert-error { background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.25); color: #fca5a5; }
+.ms-alert-warn { background: rgba(245,158,11,0.08); border: 1px solid rgba(245,158,11,0.25); color: #fcd34d; }
+.ms-alert-info { background: rgba(59,130,246,0.08); border: 1px solid rgba(59,130,246,0.25); color: var(--accent-light); }
 
-.btn-m1k-tab.active {
-  background: var(--m1k-panel);
-  color: #003865;
-  border-color: #808894;
-  box-shadow: inset 0 2px 0 #005A9C;
+/* ── Loading spinner ───────────────────────────────────────────────── */
+.ms-spinner {
+  width: 20px; height: 20px; border-radius: 50%;
+  border: 2.5px solid rgba(255,255,255,0.1);
+  border-top-color: var(--accent); animation: spin 0.7s linear infinite;
 }
+@keyframes spin { to { transform: rotate(360deg); } }
 
-/* LED Indicators */
-.m1k-led {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  border: 1px solid rgba(0,0,0,0.4);
-  display: inline-block;
+/* ── View mode tabs (inside results) ──────────────────────────────── */
+.ms-view-tabs { display: flex; gap: 4px; }
+.ms-view-tab {
+  padding: 5px 12px; border-radius: var(--radius-sm); font-size: 12px; font-weight: 500;
+  border: 1px solid var(--border); background: transparent; color: var(--text-3); cursor: pointer;
+  font-family: var(--font-sans); transition: all 0.12s;
 }
+.ms-view-tab:hover { color: var(--text-2); }
+.ms-view-tab.active { background: var(--accent-glow); border-color: rgba(59,130,246,0.3); color: var(--accent-light); }
 
-.m1k-led-green {
-  background: #00E676;
-  box-shadow: 0 0 8px #00E676;
+/* ── Verdict banner ────────────────────────────────────────────────── */
+.ms-verdict-healthy {
+  background: rgba(34,197,94,0.08); border: 1px solid rgba(34,197,94,0.25);
+  border-radius: var(--radius); padding: 14px 18px;
+  display: flex; align-items: center; gap: 14px;
 }
-
-.m1k-led-red {
-  background: #FF1744;
-  box-shadow: 0 0 8px #FF1744;
+.ms-verdict-faulty {
+  background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.25);
+  border-radius: var(--radius); padding: 14px 18px;
+  display: flex; align-items: center; gap: 14px;
 }
+.ms-verdict-icon { width: 44px; height: 44px; border-radius: 50%; display: flex; align-items: center; justify-content: center; flex-shrink: 0; font-size: 22px; }
+.ms-verdict-icon.healthy { background: rgba(34,197,94,0.15); }
+.ms-verdict-icon.faulty { background: rgba(239,68,68,0.15); }
+.ms-verdict-title { font-size: 16px; font-weight: 700; }
+.ms-verdict-title.healthy { color: var(--green); }
+.ms-verdict-title.faulty { color: var(--red); }
+.ms-verdict-sub { font-size: 12px; color: var(--text-3); margin-top: 2px; }
 
-.m1k-led-amber {
-  background: #FFD600;
-  box-shadow: 0 0 8px #FFD600;
+/* ── Feature table ─────────────────────────────────────────────────── */
+.ms-ftable { width: 100%; border-collapse: collapse; font-size: 13px; }
+.ms-ftable th { text-align: left; font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-3); padding: 8px 12px; border-bottom: 1px solid var(--border); }
+.ms-ftable td { padding: 8px 12px; border-bottom: 1px solid rgba(30,45,74,0.5); color: var(--text-2); font-family: var(--font-mono); font-size: 12px; }
+.ms-ftable tr:last-child td { border-bottom: none; }
+.ms-ftable tr:hover td { background: rgba(255,255,255,0.02); }
+.ms-tag { display: inline-block; padding: 2px 8px; border-radius: 99px; font-size: 11px; font-weight: 600; font-family: var(--font-sans); }
+.ms-tag-ok { background: rgba(34,197,94,0.12); color: var(--green); }
+.ms-tag-fault { background: rgba(239,68,68,0.12); color: var(--red); }
+.ms-tag-warn { background: rgba(245,158,11,0.12); color: var(--amber); }
+
+/* ── Stats row ─────────────────────────────────────────────────────── */
+.ms-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; }
+.ms-stat-item { background: var(--bg-input); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 10px 12px; }
+.ms-stat-label { font-size: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-3); margin-bottom: 4px; }
+.ms-stat-value { font-size: 18px; font-weight: 700; color: var(--text-1); font-family: var(--font-mono); }
+.ms-stat-unit { font-size: 11px; color: var(--text-3); margin-left: 2px; font-weight: 400; }
+
+/* ── Pipeline stage ────────────────────────────────────────────────── */
+.ms-stage { background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; }
+.ms-stage-header { display: flex; align-items: center; justify-content: space-between; padding: 10px 14px; background: rgba(255,255,255,0.02); border-bottom: 1px solid var(--border); }
+.ms-stage-num { width: 22px; height: 22px; border-radius: 6px; background: rgba(59,130,246,0.15); border: 1px solid rgba(59,130,246,0.2); display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: var(--accent-light); flex-shrink: 0; }
+.ms-stage-title { font-size: 13px; font-weight: 600; color: var(--text-1); margin-left: 8px; }
+.ms-stage-meta { font-size: 11px; color: var(--text-3); font-family: var(--font-mono); }
+.ms-stage-body { padding: 8px; }
+
+/* ── Comparison ────────────────────────────────────────────────────── */
+.ms-compare-cols { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+@media (max-width: 900px) { .ms-compare-cols { grid-template-columns: 1fr; } }
+.ms-compare-legend { display: flex; gap: 16px; align-items: center; }
+.ms-legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--text-2); }
+.ms-legend-dot { width: 10px; height: 10px; border-radius: 99px; flex-shrink: 0; }
+
+/* ── Modal ─────────────────────────────────────────────────────────── */
+.ms-modal-bg {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(4px); z-index: 100;
+  display: flex; align-items: center; justify-content: center; padding: 20px;
 }
-
-/* Input Fields */
-.m1k-input {
-  width: 100%;
-  height: 28px;
-  padding: 3px 8px;
-  font-family: "JetBrains Mono", monospace;
-  font-size: 13px;
-  color: #0F172A;
-  background: #FFFFFF;
-  border: 1px solid #94A3B8;
-  border-radius: 3px;
+.ms-modal {
+  background: var(--bg-surface); border: 1px solid var(--border);
+  border-radius: var(--radius-lg); width: 100%; max-width: 520px;
+  box-shadow: var(--shadow-md); overflow: hidden;
 }
-
-.m1k-input:focus {
-  outline: none;
-  border-color: #005A9C;
-  box-shadow: 0 0 0 1px #005A9C;
+.ms-modal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px; border-bottom: 1px solid var(--border);
 }
+.ms-modal-title { font-size: 15px; font-weight: 600; color: var(--text-1); }
+.ms-modal-close { background: none; border: none; color: var(--text-3); cursor: pointer; font-size: 18px; padding: 2px; line-height: 1; border-radius: 4px; }
+.ms-modal-close:hover { color: var(--text-1); background: rgba(255,255,255,0.05); }
+.ms-modal-body { padding: 20px; }
+.ms-modal-footer { display: flex; justify-content: flex-end; gap: 8px; padding: 14px 20px; border-top: 1px solid var(--border); }
 
-/* Measurement Rows */
-.m1k-metric-row {
-  display: flex;
-  justify-content: space-between;
-  padding: 4px 0;
-  font-size: 12px;
-  border-bottom: 1px solid #D5D9E0;
+/* ── Condition gauge card ──────────────────────────────────────────── */
+.ms-gauge-wrap { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+.ms-gauge-label { font-size: 11px; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+
+/* ── Demo preset strip ─────────────────────────────────────────────── */
+.ms-demo-strip {
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 10px; flex-wrap: wrap;
+  padding: 10px 12px; background: var(--bg-input);
+  border: 1px solid var(--border); border-radius: var(--radius-sm);
 }
+.ms-demo-label { font-size: 12px; font-weight: 600; color: var(--text-3); white-space: nowrap; }
 
-.m1k-metric-label {
-  color: #475569;
+/* ── Plot frame ────────────────────────────────────────────────────── */
+.ms-plot-frame { background: var(--bg-input); border-radius: var(--radius-sm); overflow: hidden; }
+
+/* ── Bottom statusbar ──────────────────────────────────────────────── */
+.ms-statusbar {
+  display: flex; align-items: center; justify-content: space-between;
+  height: 28px; padding: 0 16px; flex-shrink: 0;
+  background: var(--bg-surface); border-top: 1px solid var(--border);
+  font-size: 11px; color: var(--text-3); font-family: var(--font-mono);
 }
+.ms-statusbar-left { display: flex; gap: 20px; }
 
-.m1k-metric-value {
-  font-family: "JetBrains Mono", monospace;
-  font-weight: 700;
-  color: #0F172A;
-}
-
-/* Bottom Status Bar */
-.m1k-statusbar {
-  height: 26px;
-  background: #C8CCD4;
-  border-top: 1px solid #A4A9B2;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 14px;
-  font-family: "JetBrains Mono", monospace;
-  font-size: 11px;
-  color: #334155;
-}
-
-/* Modals */
-.inst-modal-backdrop {
-  position: fixed;
-  inset: 0;
-  background: rgba(0, 0, 0, 0.7);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;
-  padding: 16px;
-}
-
-.inst-modal-window {
-  background: #FFFFFF;
-  border-radius: 6px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-  overflow: hidden;
-  width: 100%;
-}
-
-.inst-spinner {
-  width: 20px;
-  height: 20px;
-  border: 2px solid rgba(255, 255, 255, 0.2);
-  border-radius: 50%;
-  border-top-color: #FFFFFF;
-  animation: spin 0.8s linear infinite;
-  display: inline-block;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-/* ==========================================================================
-   STRICT PRINT STYLING FOR ISO 20958 REPORT
-   Hides the whole application chrome and outputs ONLY the clean data report
-   ========================================================================== */
+/* ── Print / ISO Report ────────────────────────────────────────────── */
 @media print {
-  @page {
-    size: A4 portrait;
-    margin: 12mm;
-  }
-
-  html, body {
-    background: #FFFFFF !important;
-    color: #0F172A !important;
-    font-size: 12pt !important;
-    height: auto !important;
-    overflow: visible !important;
-    margin: 0 !important;
-    padding: 0 !important;
-  }
-
-  /* Hide entire web app interface */
-  .m1k-workbench,
-  .m1k-top-bar,
-  .m1k-toolstrip,
-  .m1k-workspace,
-  .m1k-controls-deck,
-  .m1k-screen-banner,
-  .m1k-statusbar,
-  button,
-  .btn-m1k,
-  .btn-m1k-run {
-    display: none !important;
-  }
-
-  /* Force modal backdrop and window to act as static full-page document */
-  .inst-modal-backdrop {
-    position: static !important;
-    background: #FFFFFF !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    display: block !important;
-    width: 100% !important;
-    height: auto !important;
-  }
-
-  .inst-modal-window {
-    position: static !important;
-    max-width: 100% !important;
-    max-height: none !important;
-    border: none !important;
-    box-shadow: none !important;
-    overflow: visible !important;
-    width: 100% !important;
-  }
-
-  /* Display ONLY the printable report document */
-  #printable-iso-report {
-    display: block !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    padding: 0 !important;
-    margin: 0 !important;
-    overflow: visible !important;
-    background: #FFFFFF !important;
-    color: #0F172A !important;
-  }
+  .ms-app, body, html { display: block !important; height: auto !important; overflow: visible !important; }
+  .ms-header, .ms-nav, .ms-sidebar, .ms-statusbar, .ms-modal-bg { display: none !important; }
 }
+
+/* Loading overlay */
+.ms-loading-overlay {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 60px 20px; gap: 12px;
+}
+.ms-loading-text { font-size: 14px; color: var(--text-2); font-weight: 500; }
+.ms-loading-sub { font-size: 12px; color: var(--text-3); }

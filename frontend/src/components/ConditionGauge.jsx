@@ -1,145 +1,61 @@
 import React from 'react';
 
+const ZONES = [
+  { label: 'Healthy',  color: '#22c55e', from: 0,   to: 33  },
+  { label: 'Warning',  color: '#f59e0b', from: 33,  to: 66  },
+  { label: 'Critical', color: '#ef4444', from: 66,  to: 100 },
+];
 
-/**
- * ISO 20958 Electric Motor Condition Speedometer / Gauge
- * Displays relative sideband decibel drop (dbFS)
- */
-export default function ConditionGauge({ worstDb, thresholdDb = -40, isHealthy }) {
-  const val = worstDb !== undefined && worstDb !== null ? Number(worstDb) : -50;
-  const clamped = Math.max(-60, Math.min(-20, val));
+export default function ConditionGauge({ worstDb, thresholdDb, isHealthy }) {
+  const pct = worstDb == null ? 0 : Math.max(0, Math.min(100, ((worstDb - (-80)) / (0 - (-80))) * 100));
+  const angle = -135 + pct * 2.7; // -135 to +135 degrees = 270 total
+  const r = 48; const cx = 60; const cy = 64;
 
-  // Map -60 dB -> 180 deg (left), -20 dB -> 0 deg (right)
-  const minDb = -60;
-  const maxDb = -20;
-  const fraction = (clamped - minDb) / (maxDb - minDb);
-  const angleDeg = 180 - fraction * 180;
+  const polarToXY = (deg, radius) => {
+    const rad = (deg * Math.PI) / 180;
+    return { x: cx + radius * Math.cos(rad), y: cy + radius * Math.sin(rad) };
+  };
 
-  const rad = (angleDeg * Math.PI) / 180;
-  const needleLen = 65;
-  const nx = 100 - needleLen * Math.cos(Math.PI - rad);
-  const ny = 100 - needleLen * Math.sin(Math.PI - rad);
+  const arcPath = (startDeg, endDeg, radius) => {
+    const s = polarToXY(startDeg, radius);
+    const e = polarToXY(endDeg, radius);
+    const large = endDeg - startDeg > 180 ? 1 : 0;
+    return `M ${s.x} ${s.y} A ${radius} ${radius} 0 ${large} 1 ${e.x} ${e.y}`;
+  };
 
-  const statusColor =
-    val < -45 ? '#00E676' :
-    val < -40 ? '#FFD600' :
-    val < -35 ? '#FF9100' : '#FF1744';
+  const zoneColor = ZONES.find((z) => pct >= z.from && pct <= z.to)?.color || '#ef4444';
 
-  const statusLabel =
-    val < -45 ? 'CLASS 1: GOOD' :
-    val < -40 ? 'CLASS 2: MODERATE' :
-    val < -35 ? 'CLASS 3: SERIOUS' : 'CLASS 4: CRITICAL';
+  const needle = polarToXY(angle, r - 8);
 
   return (
-    <div style={{
-      background: '#0B111E',
-      border: '1px solid #1E2D4A',
-      borderRadius: '4px',
-      padding: '12px 14px',
-      display: 'flex',
-      flexDirection: 'column',
-      alignItems: 'center',
-      justifyContent: 'center',
-      boxShadow: 'inset 0 0 16px rgba(0, 0, 0, 0.6)'
-    }}>
-      <div style={{
-        width: '100%',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        marginBottom: '6px',
-        borderBottom: '1px solid #18243A',
-        paddingBottom: '4px'
-      }}>
-        <span style={{ fontSize: '11px', fontWeight: 800, color: '#90CAF9', letterSpacing: '0.06em', textTransform: 'uppercase', fontFamily: 'monospace' }}>
-          ISO 20958 SEVERITY METER
-        </span>
-        <span style={{
-          fontSize: '11px',
-          fontWeight: 700,
-          fontFamily: 'monospace',
-          padding: '2px 8px',
-          borderRadius: '3px',
-          background: `${statusColor}22`,
-          border: `1px solid ${statusColor}`,
-          color: statusColor
-        }}>
-          {statusLabel}
-        </span>
-      </div>
+    <div className="ms-gauge-wrap">
+      <svg viewBox="0 0 120 90" style={{ width: '100%', maxWidth: '180px' }}>
+        {/* Background arc */}
+        <path d={arcPath(-135, 135, r)} fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth="8" strokeLinecap="round"/>
 
-      <svg width="200" height="115" viewBox="0 0 200 115">
-        <defs>
-          <linearGradient id="gaugeTrack" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#00E676" />
-            <stop offset="37.5%" stopColor="#FFD600" />
-            <stop offset="62.5%" stopColor="#FF9100" />
-            <stop offset="100%" stopColor="#FF1744" />
-          </linearGradient>
-        </defs>
+        {/* Zone arcs */}
+        <path d={arcPath(-135, -45, r)}  fill="none" stroke="#22c55e" strokeWidth="7" strokeLinecap="round" opacity="0.85"/>
+        <path d={arcPath(-45,  45, r)}   fill="none" stroke="#f59e0b" strokeWidth="7" strokeLinecap="round" opacity="0.85"/>
+        <path d={arcPath( 45, 135, r)}   fill="none" stroke="#ef4444" strokeWidth="7" strokeLinecap="round" opacity="0.85"/>
 
-        <path
-          d="M 20 100 A 80 80 0 0 1 180 100"
-          fill="none"
-          stroke="#1A2438"
-          strokeWidth="14"
-          strokeLinecap="round"
-        />
+        {/* Needle */}
+        <line x1={cx} y1={cy} x2={needle.x} y2={needle.y} stroke={zoneColor} strokeWidth="2.5" strokeLinecap="round"/>
+        <circle cx={cx} cy={cy} r="4" fill={zoneColor}/>
 
-        <path
-          d="M 20 100 A 80 80 0 0 1 180 100"
-          fill="none"
-          stroke="url(#gaugeTrack)"
-          strokeWidth="10"
-          strokeLinecap="round"
-          opacity="0.9"
-        />
-
-        <line
-          x1="100" y1="10" x2="100" y2="26"
-          stroke="#FFFFFF"
-          strokeWidth="2"
-          strokeDasharray="2 2"
-        />
-        <text x="100" y="8" textAnchor="middle" fill="#FFFFFF" fontSize="8" fontFamily="monospace" fontWeight="700">
-          ALARM (`{thresholdDb}dB`)
+        {/* dB label */}
+        <text x={cx} y={cy + 16} textAnchor="middle" fontSize="9" fontFamily="monospace" fontWeight="600" fill={worstDb == null ? 'rgba(255,255,255,0.2)' : zoneColor}>
+          {worstDb == null ? '–' : `${worstDb.toFixed(1)} dBFS`}
         </text>
-
-        <text x="20" y="114" textAnchor="middle" fill="#64B5F6" fontSize="9" fontFamily="monospace">-60dB</text>
-        <text x="55" y="60" textAnchor="middle" fill="#00E676" fontSize="8" fontFamily="monospace">-50</text>
-        <text x="100" y="38" textAnchor="middle" fill="#FFD600" fontSize="8" fontFamily="monospace">-40</text>
-        <text x="145" y="60" textAnchor="middle" fill="#FF9100" fontSize="8" fontFamily="monospace">-30</text>
-        <text x="180" y="114" textAnchor="middle" fill="#FF1744" fontSize="9" fontFamily="monospace">-20dB</text>
-
-        <line
-          x1="100"
-          y1="100"
-          x2={nx}
-          y2={ny}
-          stroke={statusColor}
-          strokeWidth="3.5"
-          strokeLinecap="round"
-        />
-
-        <circle cx="100" cy="100" r="8" fill="#1E293B" stroke={statusColor} strokeWidth="2.5" />
-        <circle cx="100" cy="100" r="3" fill="#FFFFFF" />
       </svg>
-
-      <div style={{ marginTop: '2px', textAlign: 'center' }}>
-        <div style={{
-          fontSize: '22px',
-          fontWeight: 800,
-          fontFamily: 'monospace',
-          color: statusColor,
-          letterSpacing: '-0.02em',
-          lineHeight: 1
-        }}>
-          {val !== undefined ? `${val.toFixed(2)} dBFS` : '— dBFS'}
-        </div>
-        <div style={{ fontSize: '11px', color: '#94A3B8', marginTop: '4px', fontFamily: 'monospace' }}>
-          Sideband Energy Drop rel. Carrier (50 Hz)
-        </div>
+      <div className="ms-gauge-label">Condition Index</div>
+      <div style={{ display: 'flex', gap: '8px' }}>
+        {ZONES.map((z) => (
+          <div key={z.label} style={{ display: 'flex', alignItems: 'center', gap: '4px', fontSize: '10px', color: 'var(--text-3)' }}>
+            <span style={{ width: '8px', height: '8px', borderRadius: '99px', background: z.color, display: 'inline-block' }}/>
+            {z.label}
+          </div>
+        ))}
       </div>
     </div>
   );
-k}
+}

@@ -1,137 +1,128 @@
 import React from 'react';
-import { SettingsIcon, CpuIcon } from './Icons';
 
-export default function ParameterPanel({ params, updateParam }) {
-  const renderNumberInput = (key, label, min, max, step, unit) => (
-    <div style={{ marginBottom: '8px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3px' }}>
-        <span style={{ fontSize: '12px', fontWeight: 700, color: '#334155', textTransform: 'uppercase', letterSpacing: '0.03em' }}>
-          {label}
-        </span>
-        {unit && <span style={{ fontSize: '11px', color: '#64748B', fontFamily: 'monospace' }}>[{unit}]</span>}
-      </div>
-      <input
-        className="m1k-input"
-        type="number"
-        min={min}
-        max={max}
-        step={step}
-        value={params[key]}
-        onChange={(e) => updateParam(key, parseFloat(e.target.value) || 0)}
-      />
-    </div>
-  );
-
+function Field({ label, unit, children }) {
   return (
-    <div style={{ padding: '6px' }}>
-      {/* Module 1: Timebase / Acquisition */}
-      <div className="m1k-module">
-        <div className="m1k-module-title">
-          <span>TIMEBASE &amp; ACQUISITION</span>
-          <span className="font-mono text-[11px] text-slate-600">ACQ_01</span>
-        </div>
-        <div className="m1k-module-body">
-          {renderNumberInput('fs', 'Sampling Rate (fs)', 1000, 200000, 1000, 'Hz')}
-          {renderNumberInput('f_supply', 'Supply Frequency (f₀)', 1, 400, 0.5, 'Hz')}
-        </div>
+    <div className="ms-field">
+      <div className="ms-field-row">
+        <label className="ms-label" style={{ margin: 0 }}>{label}</label>
+        {unit && <span className="ms-unit">{unit}</span>}
       </div>
-
-      {/* Module 2: Motor Nameplate */}
-      <div className="m1k-module">
-        <div className="m1k-module-title">
-          <span>MOTOR NAMEPLATE</span>
-          <span className="font-mono text-[11px] text-slate-600">DUT_SPEC</span>
-        </div>
-        <div className="m1k-module-body">
-          {renderNumberInput('rated_rpm', 'Rated Speed (Nr)', 1, 30000, 10, 'RPM')}
-          {renderNumberInput('poles', 'Stator Poles (2p)', 2, 32, 2, 'P')}
-        </div>
-      </div>
-
-      {/* Module 3: Math & Filter */}
-      <div className="m1k-module">
-        <div className="m1k-module-title">
-          <span>FILTER (SOS BUTTERWORTH)</span>
-          <span className="font-mono text-[11px] text-slate-600">DSP_FLT</span>
-        </div>
-        <div className="m1k-module-body">
-          {renderNumberInput('low_cut', 'High-Pass Cutoff', 0.1, 1000, 0.5, 'Hz')}
-          {renderNumberInput('high_cut', 'Low-Pass Cutoff', 10, 24000, 10, 'Hz')}
-          {renderNumberInput('filter_order', 'Filter Order', 1, 10, 1, 'N')}
-        </div>
-      </div>
-
-      {/* Module 4: Fault Discriminator */}
-      <div className="m1k-module">
-        <div className="m1k-module-title">
-          <span>DIAGNOSTIC THRESHOLD</span>
-          <span className="font-mono text-[11px] text-slate-600">ISO_20958</span>
-        </div>
-        <div className="m1k-module-body">
-          {renderNumberInput('threshold_dB', 'Alarm Limit', -80, 0, 1, 'dBFS')}
-        </div>
-      </div>
-
-      {/* Module 5: Kinematic Calculator */}
-      <div className="m1k-module">
-        <div className="m1k-module-title">
-          <span>CALCULATED KINEMATICS</span>
-          <CpuIcon className="w-3.5 h-3.5 text-slate-700" />
-        </div>
-        <div className="m1k-module-body">
-          <KinematicsDisplay params={params} />
-        </div>
-      </div>
-
-      {/* Module 6: Hardware Benchmark Info */}
-      <div className="m1k-module" style={{ marginBottom: '10px' }}>
-        <div className="m1k-module-title">
-          <span>BENCHMARK MOTOR REFERENCE</span>
-        </div>
-        <div className="m1k-module-body" style={{ fontSize: '11px', color: '#475569', lineHeight: 1.5 }}>
-          <div>0.2 kW 3-Phase Squirrel-Cage Induction Motor. 9 synchronous channels at 50 kS/s.</div>
-          <div style={{ marginTop: '4px' }}>
-            <a
-              href="https://www.nature.com/articles/s41597-025-05437-3"
-              target="_blank"
-              rel="noreferrer"
-              style={{ color: '#005A9C', fontWeight: 700, textDecoration: 'none' }}
-            >
-              Nature Sci. Data (2025) ↗
-            </a>
-          </div>
-        </div>
-      </div>
+      {children}
     </div>
   );
 }
 
-function KinematicsDisplay({ params }) {
+function NumInput({ paramKey, params, updateParam, min, max, step }) {
+  return (
+    <input
+      type="number"
+      className="ms-input"
+      min={min} max={max} step={step}
+      value={params[paramKey]}
+      onChange={(e) => updateParam(paramKey, parseFloat(e.target.value) || 0)}
+    />
+  );
+}
+
+function KinematicsBlock({ params }) {
   const { f_supply, rated_rpm, poles } = params;
   if (!f_supply || !rated_rpm || !poles) return null;
-
   const Ns = (120 * f_supply) / poles;
   const s = (Ns - rated_rpm) / Ns;
   const f_slip = Math.abs(s) * f_supply;
-  const f_low = f_supply - 2 * f_slip;
-  const f_up = f_supply + 2 * f_slip;
-
   const rows = [
-    ['Sync Speed (Ns)', `${Ns.toFixed(0)} RPM`],
-    ['Slip Ratio (s)', `${(s * 100).toFixed(2)} %`],
-    ['Slip Frequency (f_s)', `${f_slip.toFixed(2)} Hz`],
-    ['Lower SB (f₀ - 2sf₀)', `${f_low.toFixed(2)} Hz`],
-    ['Upper SB (f₀ + 2sf₀)', `${f_up.toFixed(2)} Hz`],
+    ['Sync Speed', `${Ns.toFixed(0)} RPM`],
+    ['Slip Ratio', `${(s * 100).toFixed(2)} %`],
+    ['Slip Freq.', `${f_slip.toFixed(2)} Hz`],
+    ['Lower SB', `${(f_supply - 2 * f_slip).toFixed(2)} Hz`],
+    ['Upper SB', `${(f_supply + 2 * f_slip).toFixed(2)} Hz`],
   ];
-
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+    <div>
       {rows.map(([label, val]) => (
-        <div key={label} className="m1k-metric-row">
-          <span className="m1k-metric-label" style={{ fontSize: '11px' }}>{label}</span>
-          <span className="m1k-metric-value" style={{ fontSize: '11px' }}>{val}</span>
+        <div key={label} className="ms-kine-row">
+          <span className="ms-kine-label">{label}</span>
+          <span className="ms-kine-value">{val}</span>
         </div>
       ))}
     </div>
+  );
+}
+
+export default function ParameterPanel({ params, updateParam }) {
+  return (
+    <>
+      <div className="ms-section-label">Acquisition</div>
+      <div className="ms-card">
+        <div className="ms-card-body">
+          <Field label="Sampling Rate" unit="Hz">
+            <NumInput paramKey="fs" params={params} updateParam={updateParam} min={1000} max={200000} step={1000} />
+          </Field>
+          <Field label="Supply Frequency" unit="Hz">
+            <NumInput paramKey="f_supply" params={params} updateParam={updateParam} min={1} max={400} step={0.5} />
+          </Field>
+        </div>
+      </div>
+
+      <div className="ms-section-label">Motor Nameplate</div>
+      <div className="ms-card">
+        <div className="ms-card-body">
+          <Field label="Rated Speed" unit="RPM">
+            <NumInput paramKey="rated_rpm" params={params} updateParam={updateParam} min={1} max={30000} step={10} />
+          </Field>
+          <Field label="Poles" unit="P">
+            <NumInput paramKey="poles" params={params} updateParam={updateParam} min={2} max={32} step={2} />
+          </Field>
+        </div>
+      </div>
+
+      <div className="ms-section-label">Bandpass Filter</div>
+      <div className="ms-card">
+        <div className="ms-card-body">
+          <Field label="High-Pass Cutoff" unit="Hz">
+            <NumInput paramKey="low_cut" params={params} updateParam={updateParam} min={0.1} max={1000} step={0.5} />
+          </Field>
+          <Field label="Low-Pass Cutoff" unit="Hz">
+            <NumInput paramKey="high_cut" params={params} updateParam={updateParam} min={10} max={24000} step={10} />
+          </Field>
+          <Field label="Filter Order" unit="N">
+            <NumInput paramKey="filter_order" params={params} updateParam={updateParam} min={1} max={10} step={1} />
+          </Field>
+        </div>
+      </div>
+
+      <div className="ms-section-label">Fault Threshold</div>
+      <div className="ms-card">
+        <div className="ms-card-body">
+          <Field label="Sideband Alarm Level" unit="dBFS">
+            <NumInput paramKey="threshold_dB" params={params} updateParam={updateParam} min={-80} max={0} step={1} />
+          </Field>
+        </div>
+      </div>
+
+      <div className="ms-section-label">Kinematics</div>
+      <div className="ms-card">
+        <div className="ms-card-body">
+          <KinematicsBlock params={params} />
+        </div>
+      </div>
+
+      <div className="ms-section-label">Dataset Reference</div>
+      <div className="ms-card">
+        <div className="ms-card-body">
+          <p style={{ fontSize: '12px', color: 'var(--text-3)', lineHeight: 1.6 }}>
+            0.2 kW 3-Phase SCIM · 9 channels · 50 kS/s
+          </p>
+          <a
+            href="https://www.nature.com/articles/s41597-025-05437-3"
+            target="_blank" rel="noreferrer"
+            style={{ fontSize: '12px', color: 'var(--accent-light)', textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '4px', marginTop: '6px' }}
+          >
+            Nature Sci. Data (2025)
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+          </a>
+        </div>
+      </div>
+    </>
   );
 }
