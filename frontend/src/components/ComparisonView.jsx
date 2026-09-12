@@ -1,48 +1,48 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import Plot from 'react-plotly.js';
 import FileUpload from './FileUpload';
 import VerdictBadge from './VerdictBadge';
-import { ALICE_SCREEN_LAYOUT } from './SpectrumChart';
+import { MOTORSENSE_SCREEN_LAYOUT } from './SpectrumChart';
 import api from '../api';
 
-function OverlayPlot({ title, xH, yH, xF, yF, xLabel, yLabel, f0, sbLo, sbHi, height = 240 }) {
+function OverlayPlot({ title, xH, yH, xF, yF, xLabel, yLabel, f0, sbLo, sbHi, height = 260 }) {
   const shapes = [];
   if (f0) {
     shapes.push({
       type: 'line', x0: f0, x1: f0, yref: 'paper', y0: 0, y1: 1,
-      line: { color: '#2979FF', width: 1.5, dash: 'solid' },
+      line: { color: '#2979FF', width: 1.8, dash: 'solid' },
     });
   }
   if (sbLo) {
     shapes.push({
       type: 'line', x0: sbLo, x1: sbLo, yref: 'paper', y0: 0, y1: 1,
-      line: { color: '#FF1744', width: 1.5, dash: 'dot' },
+      line: { color: '#FF1744', width: 1.8, dash: 'dot' },
     });
   }
   if (sbHi) {
     shapes.push({
       type: 'line', x0: sbHi, x1: sbHi, yref: 'paper', y0: 0, y1: 1,
-      line: { color: '#FF1744', width: 1.5, dash: 'dot' },
+      line: { color: '#FF1744', width: 1.8, dash: 'dot' },
     });
   }
 
   const layout = {
-    ...ALICE_SCREEN_LAYOUT,
+    ...MOTORSENSE_SCREEN_LAYOUT,
     height,
     shapes,
-    xaxis: { ...ALICE_SCREEN_LAYOUT.xaxis, title: { text: xLabel || 'Frequency (Hz)', font: { size: 10, color: '#90CAF9' } } },
-    yaxis: { ...ALICE_SCREEN_LAYOUT.yaxis, title: { text: yLabel || 'Amplitude', font: { size: 10, color: '#90CAF9' } } },
+    xaxis: { ...MOTORSENSE_SCREEN_LAYOUT.xaxis, title: { text: xLabel || 'Frequency (Hz)', font: { size: 12, color: '#90CAF9' } } },
+    yaxis: { ...MOTORSENSE_SCREEN_LAYOUT.yaxis, title: { text: yLabel || 'Amplitude', font: { size: 12, color: '#90CAF9' } } },
   };
 
   return (
-    <div style={{ background: '#090D16', border: '1px solid #1C293E', borderRadius: '3px', padding: '6px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '4px', padding: '0 4px' }}>
-        <span style={{ fontSize: '11px', fontFamily: 'monospace', fontWeight: 700, color: '#64B5F6' }}>
+    <div style={{ background: '#090D16', border: '1px solid #1C293E', borderRadius: '4px', padding: '8px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px', padding: '0 4px' }}>
+        <span style={{ fontSize: '13px', fontFamily: 'monospace', fontWeight: 700, color: '#64B5F6' }}>
           {title}
         </span>
-        <div style={{ display: 'flex', gap: '12px', fontSize: '10px', fontFamily: 'monospace' }}>
-          <span style={{ color: '#00E676', fontWeight: 700 }}>■ TRACE A: HEALTHY REF</span>
-          <span style={{ color: '#FF1744', fontWeight: 700 }}>■ TRACE B: EVALUATED</span>
+        <div style={{ display: 'flex', gap: '14px', fontSize: '11px', fontFamily: 'monospace' }}>
+          <span style={{ color: '#00E676', fontWeight: 700 }}>■ CHANNEL A: HEALTHY BENCHMARK</span>
+          <span style={{ color: '#FF1744', fontWeight: 700 }}>■ CHANNEL B: EVALUATED MOTOR</span>
         </div>
       </div>
       <Plot
@@ -52,16 +52,16 @@ function OverlayPlot({ title, xH, yH, xF, yF, xLabel, yLabel, f0, sbLo, sbHi, he
             y: yH || [],
             type: 'scatter',
             mode: 'lines',
-            name: 'Trace A (Healthy)',
-            line: { color: '#00E676', width: 1.5 },
+            name: 'Channel A (Healthy)',
+            line: { color: '#00E676', width: 1.8 },
           },
           {
             x: xF || [],
             y: yF || [],
             type: 'scatter',
             mode: 'lines',
-            name: 'Trace B (Suspect)',
-            line: { color: '#FF1744', width: 1.5 },
+            name: 'Channel B (Evaluated)',
+            line: { color: '#FF1744', width: 1.8 },
           },
         ]}
         layout={layout}
@@ -114,185 +114,202 @@ export default function ComparisonView({ params }) {
     }
   };
 
-  const H = results?.healthy;
-  const F = results?.faulty;
-  const f0 = H?.sideband_info?.f_supply_hz;
-  const sbLo = H?.sideband_info?.f_sb_lower_hz;
-  const sbHi = H?.sideband_info?.f_sb_upper_hz;
-  const thr = params.threshold_dB ?? -40;
+  const handlePresetCompare = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const p1 = api.post('/api/sample/analyze', new URLSearchParams({ sample_id: 'FILE 1.mat', params: JSON.stringify(params) }));
+      const p2 = api.post('/api/sample/analyze', new URLSearchParams({ sample_id: 'FILE 6.mat', params: JSON.stringify(params) }));
+      const [r1, r2] = await Promise.all([p1, p2]);
+      setResults({
+        healthy: r1.data,
+        faulty: r2.data,
+        differences: {
+          delta_worst_sideband_dB: (r2.data.features?.worst_sideband_dB || 0) - (r1.data.features?.worst_sideband_dB || 0),
+          fault_identified: r2.data.verdict?.verdict !== 'HEALTHY',
+        }
+      });
+    } catch (err) {
+      setError(err?.response?.data?.detail || err.message || 'Error running preset comparison');
+    } finally {
+      setLoading(false);
+    }
+  };
 
-  const deltaLower = F && H ? F.features?.L_lower_dB - H.features?.L_lower_dB : null;
-  const deltaUpper = F && H ? F.features?.L_upper_dB - H.features?.L_upper_dB : null;
+  const h = results?.healthy;
+  const f = results?.faulty;
+  const d = results?.differences;
+  const f0 = h?.sideband_info?.f_supply_hz || params.f_supply;
+  const sbLo = h?.sideband_info?.f_sb_lower_hz;
+  const sbHi = h?.sideband_info?.f_sb_upper_hz;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-      {/* Dual Channel File Ingestion Strip */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '8px' }}>
-        <div style={{ background: '#0F1523', border: '1px solid #1E3A2B', borderRadius: '3px', padding: '6px' }}>
-          <div style={{ fontSize: '10px', fontFamily: 'monospace', fontWeight: 700, color: '#00E676', marginBottom: '4px' }}>
-            [CHANNEL A] BASELINE RECORDING (HEALTHY)
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+      {/* 1-Click Preset Comparison Bar */}
+      <div style={{
+        background: '#0D1524',
+        border: '1px solid #1E2E4A',
+        borderRadius: '4px',
+        padding: '10px 14px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        flexWrap: 'wrap',
+        gap: '8px'
+      }}>
+        <div>
+          <span style={{ fontSize: '13px', fontWeight: 800, color: '#90CAF9', fontFamily: 'monospace' }}>
+            ⚡ DUAL-CHANNEL BENCHMARK COMPARATOR
+          </span>
+          <div style={{ fontSize: '11px', color: '#64748B' }}>
+            Direct comparison between baseline healthy motor (CH-A) and suspect evaluated motor (CH-B)
+          </div>
+        </div>
+
+        <button
+          type="button"
+          className="btn-m1k"
+          style={{ height: '30px', fontSize: '12px', background: '#0F3C63', color: '#FFFFFF', borderColor: '#0284C7' }}
+          onClick={handlePresetCompare}
+          disabled={loading}
+        >
+          ▶ Compare Bundled Datasets (FILE 1 Healthy vs FILE 6 Faulty)
+        </button>
+      </div>
+
+      {/* Upload Inputs Grid */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+        <div style={{ background: '#0F1523', border: '1px solid #1C3325', borderRadius: '4px', padding: '10px' }}>
+          <div style={{ fontSize: '12px', fontFamily: 'monospace', fontWeight: 800, color: '#00E676', marginBottom: '8px' }}>
+            CHANNEL A: HEALTHY BENCHMARK RECORDING
           </div>
           <FileUpload
             label=""
-            onColumnsReady={(_cols, _fname, f) => setHealthyFile(f)}
+            onColumnsReady={(_, __, f) => setHealthyFile(f)}
             selectedColumn={healthyCol}
             onColumnChange={setHealthyCol}
           />
         </div>
 
-        <div style={{ background: '#0F1523', border: '1px solid #3E1B24', borderRadius: '3px', padding: '6px' }}>
-          <div style={{ fontSize: '10px', fontFamily: 'monospace', fontWeight: 700, color: '#FF1744', marginBottom: '4px' }}>
-            [CHANNEL B] EVALUATED RECORDING (SUSPECT ANOMALY)
+        <div style={{ background: '#0F1523', border: '1px solid #3B161B', borderRadius: '4px', padding: '10px' }}>
+          <div style={{ fontSize: '12px', fontFamily: 'monospace', fontWeight: 800, color: '#FF5252', marginBottom: '8px' }}>
+            CHANNEL B: EVALUATED / SUSPECT MOTOR RECORDING
           </div>
           <FileUpload
             label=""
-            onColumnsReady={(_cols, _fname, f) => setFaultyFile(f)}
+            onColumnsReady={(_, __, f) => setFaultyFile(f)}
             selectedColumn={faultyCol}
             onColumnChange={setFaultyCol}
           />
         </div>
       </div>
 
-      <button
-        type="button"
-        className="btn-m1k btn-m1k-run"
-        style={{ width: '100%', height: '32px', fontSize: '12px' }}
-        disabled={loading || !healthyFile || !faultyFile}
-        onClick={runComparison}
-      >
-        {loading ? (
-          <>
-            <div className="inst-spinner" style={{ borderTopColor: '#FFFFFF' }} />
-            PROCESSING DUAL-TRACE OVERLAY TRANSFORMS...
-          </>
-        ) : (
-          '▶ RUN DUAL-CHANNEL COMPARATIVE ANALYSIS (TRACE A vs TRACE B)'
-        )}
-      </button>
+      {healthyFile && faultyFile && (
+        <button
+          type="button"
+          className="btn-m1k btn-m1k-run"
+          style={{ width: '100%', height: '36px', fontSize: '13px' }}
+          onClick={runComparison}
+          disabled={loading}
+        >
+          {loading ? 'COMPUTING DUAL-CHANNEL SPECTRAL COHERENCE...' : '▶ RUN BENCHMARK COMPARISON (CH-A vs CH-B)'}
+        </button>
+      )}
 
       {error && (
-        <div style={{ background: '#3D0A14', border: '1px solid #FF1744', color: '#FF8A80', padding: '8px', borderRadius: '2px', fontSize: '11px', fontFamily: 'monospace' }}>
+        <div style={{ background: '#3D0A14', border: '1px solid #FF1744', color: '#FF8A80', padding: '10px', borderRadius: '4px', fontSize: '12px', fontFamily: 'monospace' }}>
           ERROR: {error}
         </div>
       )}
 
+      {loading && !results && (
+        <div style={{ background: '#090D16', border: '1px solid #1D2A40', borderRadius: '4px', padding: '40px', textAlign: 'center' }}>
+          <div className="inst-spinner" style={{ width: '32px', height: '32px', borderTopColor: '#00E5FF', margin: '0 auto 12px auto' }} />
+          <div style={{ fontSize: '13px', fontFamily: 'monospace', color: '#00E5FF', fontWeight: 800 }}>
+            COMPUTING DUAL CHANNEL CROSS-SPECTRAL DIFFERENCES...
+          </div>
+        </div>
+      )}
+
+      {/* Comparison Plots & Tables */}
       {results && (
-        <>
-          {/* Dual Verdict Readout */}
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '8px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          {/* Summary Delta Banner */}
+          <div style={{
+            background: '#121A2B',
+            border: '1.5px solid #2563EB',
+            borderRadius: '4px',
+            padding: '12px 16px',
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'center'
+          }}>
             <div>
-              <div style={{ fontSize: '10px', fontFamily: 'monospace', fontWeight: 700, color: '#00E676', marginBottom: '2px' }}>
-                TRACE A (HEALTHY) STATUS:
+              <div style={{ fontSize: '14px', fontWeight: 800, color: '#E2E8F0', fontFamily: 'monospace' }}>
+                SIDEBAND DIFFERENTIAL: Δ {d?.delta_worst_sideband_dB > 0 ? '+' : ''}{d?.delta_worst_sideband_dB?.toFixed(2)} dBFS
               </div>
-              <VerdictBadge verdict={H?.verdict} thresholdDB={thr} />
-            </div>
-            <div>
-              <div style={{ fontSize: '10px', fontFamily: 'monospace', fontWeight: 700, color: '#FF1744', marginBottom: '2px' }}>
-                TRACE B (EVALUATED) STATUS:
+              <div style={{ fontSize: '12px', color: '#90CAF9', marginTop: '2px' }}>
+                {d?.fault_identified
+                  ? 'CRITICAL FAULT DETECTED: Sideband modulation energy significantly elevated compared to healthy baseline.'
+                  : 'NORMAL: Channel B signatures closely match baseline reference.'}
               </div>
-              <VerdictBadge verdict={F?.verdict} thresholdDB={thr} />
             </div>
+
+            <span style={{
+              fontSize: '12px',
+              fontFamily: 'monospace',
+              fontWeight: 800,
+              padding: '4px 10px',
+              borderRadius: '3px',
+              background: d?.fault_identified ? '#7F1D1D' : '#064E3B',
+              color: d?.fault_identified ? '#FCA5A5' : '#6EE7B7',
+              border: `1px solid ${d?.fault_identified ? '#EF4444' : '#10B981'}`
+            }}>
+              {d?.fault_identified ? 'FAULT CONFIRMED' : 'BASELINE MATCH'}
+            </span>
           </div>
 
-          {/* Differential Delta Table */}
-          <div style={{ background: '#090D16', border: '1px solid #1F2C42', borderRadius: '2px', padding: '6px' }}>
-            <div style={{ fontSize: '10px', fontFamily: 'monospace', fontWeight: 700, color: '#64B5F6', marginBottom: '4px' }}>
-              DIFFERENTIAL SPECTRAL ENERGY MATRIX (Δ dBFS = TRACE B − TRACE A)
+          <OverlayPlot
+            title="DUAL-CHANNEL SPECTRUM OVERLAY [dBFS rel. f₀]"
+            xH={h?.fft_zoom?.f}
+            yH={h?.fft_zoom?.dB}
+            xF={f?.fft_zoom?.f}
+            yF={f?.fft_zoom?.dB}
+            xLabel="Frequency (Hz)"
+            yLabel="Relative Level (dBFS)"
+            f0={f0}
+            sbLo={sbLo}
+            sbHi={sbHi}
+            height={280}
+          />
+
+          <OverlayPlot
+            title="DUAL-CHANNEL OSCILLOSCOPE TIME TRACE (CH-A vs CH-B)"
+            xH={h?.raw_signal?.t}
+            yH={h?.raw_signal?.x}
+            xF={f?.raw_signal?.t}
+            yF={f?.raw_signal?.x}
+            xLabel="Time (s)"
+            yLabel="Stator Current (A)"
+            height={240}
+          />
+
+          {/* Verdicts */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+            <div>
+              <div style={{ fontSize: '12px', fontFamily: 'monospace', fontWeight: 700, color: '#00E676', marginBottom: '4px' }}>
+                CHANNEL A VERDICT (HEALTHY):
+              </div>
+              <VerdictBadge verdict={h?.verdict} thresholdDB={params.threshold_dB} />
             </div>
-            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '11px', fontFamily: 'monospace' }}>
-              <thead>
-                <tr style={{ background: '#101726', color: '#90CAF9', borderBottom: '1px solid #23314A' }}>
-                  <th style={{ textAlign: 'left', padding: '4px 6px', fontSize: '9px' }}>COORDINATE</th>
-                  <th style={{ textAlign: 'left', padding: '4px 6px', fontSize: '9px' }}>TRACE A (HEALTHY)</th>
-                  <th style={{ textAlign: 'left', padding: '4px 6px', fontSize: '9px' }}>TRACE B (EVALUATED)</th>
-                  <th style={{ textAlign: 'left', padding: '4px 6px', fontSize: '9px' }}>Δ ENERGY RATIO</th>
-                  <th style={{ textAlign: 'left', padding: '4px 6px', fontSize: '9px' }}>THRESHOLD</th>
-                  <th style={{ textAlign: 'left', padding: '4px 6px', fontSize: '9px' }}>EVALUATION</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr style={{ borderBottom: '1px solid #172236' }}>
-                  <td style={{ padding: '4px 6px', color: '#E0E6ED' }}>Lower Pole-Pass (f₀ − 2sf₀)</td>
-                  <td style={{ padding: '4px 6px', color: '#00E676', fontWeight: 700 }}>{H?.features?.L_lower_dB?.toFixed(2)} dBFS</td>
-                  <td style={{ padding: '4px 6px', color: '#00E5FF', fontWeight: 700 }}>{F?.features?.L_lower_dB?.toFixed(2)} dBFS</td>
-                  <td style={{ padding: '4px 6px', fontWeight: 800, color: (deltaLower || 0) > 0 ? '#FF1744' : '#00E676' }}>
-                    {(deltaLower || 0) > 0 ? `+${deltaLower?.toFixed(2)}` : deltaLower?.toFixed(2)} dB
-                  </td>
-                  <td style={{ padding: '4px 6px', color: '#64748B' }}>{thr} dBFS</td>
-                  <td style={{ padding: '4px 6px' }}>
-                    <span style={{
-                      fontSize: '9px', padding: '1px 5px', borderRadius: '2px', fontWeight: 700,
-                      background: (F?.features?.L_lower_dB || 0) > thr ? '#4D0A14' : '#0A3B22',
-                      color: (F?.features?.L_lower_dB || 0) > thr ? '#FF5252' : '#69F0AE',
-                      border: `1px solid ${(F?.features?.L_lower_dB || 0) > thr ? '#FF1744' : '#00E676'}`
-                    }}>
-                      {(F?.features?.L_lower_dB || 0) > thr ? 'ALARM: ELEVATED FLUX' : 'NORMAL: SYMMETRIC FLUX'}
-                    </span>
-                  </td>
-                </tr>
-                <tr style={{ borderBottom: '1px solid #172236' }}>
-                  <td style={{ padding: '4px 6px', color: '#E0E6ED' }}>Upper Pole-Pass (f₀ + 2sf₀)</td>
-                  <td style={{ padding: '4px 6px', color: '#00E676', fontWeight: 700 }}>{H?.features?.L_upper_dB?.toFixed(2)} dBFS</td>
-                  <td style={{ padding: '4px 6px', color: '#00E5FF', fontWeight: 700 }}>{F?.features?.L_upper_dB?.toFixed(2)} dBFS</td>
-                  <td style={{ padding: '4px 6px', fontWeight: 800, color: (deltaUpper || 0) > 0 ? '#FF1744' : '#00E676' }}>
-                    {(deltaUpper || 0) > 0 ? `+${deltaUpper?.toFixed(2)}` : deltaUpper?.toFixed(2)} dB
-                  </td>
-                  <td style={{ padding: '4px 6px', color: '#64748B' }}>{thr} dBFS</td>
-                  <td style={{ padding: '4px 6px' }}>
-                    <span style={{
-                      fontSize: '9px', padding: '1px 5px', borderRadius: '2px', fontWeight: 700,
-                      background: (F?.features?.L_upper_dB || 0) > thr ? '#4D0A14' : '#0A3B22',
-                      color: (F?.features?.L_upper_dB || 0) > thr ? '#FF5252' : '#69F0AE',
-                      border: `1px solid ${(F?.features?.L_upper_dB || 0) > thr ? '#FF1744' : '#00E676'}`
-                    }}>
-                      {(F?.features?.L_upper_dB || 0) > thr ? 'ALARM: ELEVATED FLUX' : 'NORMAL: SYMMETRIC FLUX'}
-                    </span>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+            <div>
+              <div style={{ fontSize: '12px', fontFamily: 'monospace', fontWeight: 700, color: '#FF5252', marginBottom: '4px' }}>
+                CHANNEL B VERDICT (EVALUATED):
+              </div>
+              <VerdictBadge verdict={f?.verdict} thresholdDB={params.threshold_dB} />
+            </div>
           </div>
-
-          {/* Dual Trace Spectrum Charts */}
-          <OverlayPlot
-            title="DUAL TRACE 1: FFT SPECTRUM (CARRIER ±50 Hz SPAN)"
-            xH={H?.fft?.freqs_zoom}
-            yH={H?.fft?.mag_zoom}
-            xF={F?.fft?.freqs_zoom}
-            yF={F?.fft?.mag_zoom}
-            xLabel="Frequency (Hz)"
-            yLabel="Amplitude (Arms)"
-            f0={f0}
-            sbLo={sbLo}
-            sbHi={sbHi}
-          />
-
-          <OverlayPlot
-            title="DUAL TRACE 2: WELCH PSD (AVERAGED NOISE REDUCTION)"
-            xH={H?.welch_psd?.freqs_zoom}
-            yH={H?.welch_psd?.psd_db_zoom}
-            xF={F?.welch_psd?.freqs_zoom}
-            yF={F?.welch_psd?.psd_db_zoom}
-            xLabel="Frequency (Hz)"
-            yLabel="PSD (dB/Hz)"
-            f0={f0}
-            sbLo={sbLo}
-            sbHi={sbHi}
-          />
-
-          <OverlayPlot
-            title="DUAL TRACE 3: HILBERT DEMODULATED ENVELOPE MODULATION"
-            xH={H?.hilbert_envelope?.freqs_zoom}
-            yH={H?.hilbert_envelope?.mag_zoom}
-            xF={F?.hilbert_envelope?.freqs_zoom}
-            yF={F?.hilbert_envelope?.mag_zoom}
-            xLabel="Modulation Frequency (Hz)"
-            yLabel="Envelope Magnitude"
-            f0={f0}
-            sbLo={sbLo}
-            sbHi={sbHi}
-          />
-        </>
+        </div>
       )}
     </div>
   );

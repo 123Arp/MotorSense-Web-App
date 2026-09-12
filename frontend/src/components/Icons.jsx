@@ -1,4 +1,79 @@
-﻿import React from 'react';
+import React from 'react';
+
+/**
+ * Custom High-Tech MotorSense Logo Mark
+ * Features an industrial induction motor stator ring with electromagnetic coil teeth,
+ * central rotor, and an intersecting dynamic electrical current signature waveform.
+ */
+export function MotorSenseLogo({ className = "w-8 h-8", size = 32 }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 100 100"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className={className}
+      style={{ flexShrink: 0 }}
+    >
+      <defs>
+        <linearGradient id="statorGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stopColor="#0284C7" />
+          <stop offset="50%" stopColor="#0369A1" />
+          <stop offset="100%" stopColor="#075985" />
+        </linearGradient>
+        <linearGradient id="waveGrad" x1="0%" y1="50%" x2="100%" y2="50%">
+          <stop offset="0%" stopColor="#00E5FF" />
+          <stop offset="50%" stopColor="#10B981" />
+          <stop offset="100%" stopColor="#00E5FF" />
+        </linearGradient>
+        <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+          <feGaussianBlur stdDeviation="3" result="blur" />
+          <feComposite in="SourceGraphic" in2="blur" operator="over" />
+        </filter>
+      </defs>
+
+      {/* Outer Housing / Stator Rim */}
+      <circle cx="50" cy="50" r="45" stroke="url(#statorGrad)" strokeWidth="5" fill="#0B132B" />
+      <circle cx="50" cy="50" r="39" stroke="#1E293B" strokeWidth="2" strokeDasharray="4 4" fill="#0F172A" />
+
+      {/* 12 Stator Pole / Coil Teeth */}
+      {[0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330].map((deg) => (
+        <line
+          key={deg}
+          x1="50"
+          y1="11"
+          x2="50"
+          y2="19"
+          stroke="#38BDF8"
+          strokeWidth="3.5"
+          strokeLinecap="round"
+          transform={`rotate(${deg} 50 50)`}
+        />
+      ))}
+
+      {/* Inner Rotor Core Ring */}
+      <circle cx="50" cy="50" r="25" stroke="#475569" strokeWidth="3" fill="#1E293B" />
+      <circle cx="50" cy="50" r="8" fill="#38BDF8" />
+      <circle cx="50" cy="50" r="4" fill="#0F172A" />
+
+      {/* Intersecting High-Voltage Current Signature Wave (MCSA Sensing) */}
+      <path
+        d="M 6 50 Q 22 18 36 50 T 64 50 T 94 50"
+        stroke="url(#waveGrad)"
+        strokeWidth="4.5"
+        strokeLinecap="round"
+        fill="none"
+        filter="url(#glow)"
+      />
+
+      {/* Pulse Sensor Nodes */}
+      <circle cx="22" cy="34" r="3" fill="#00E5FF" />
+      <circle cx="50" cy="50" r="2" fill="#FFFFFF" />
+      <circle cx="78" cy="34" r="3" fill="#10B981" />
+    </svg>
+  );
+}
 
 export function WaveformIcon({ className = "w-4 h-4" }) {
   return (
@@ -113,3 +188,44 @@ export function SettingsIcon({ className = "w-4 h-4" }) {
     </svg>
   );
 }
+
+export function GaugeIcon({ className = "w-4 h-4" }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 2a10 10 0 0 0-10 10c0 4.42 2.87 8.17 6.84 9.5.5.17.84-.2.84-.48v-1.74" />
+      <path d="M12 2a10 10 0 0 1 10 10c0 4.42-2.87 8.17-6.84 9.5-.5.17-.84-.2-.84-.48v-1.74" />
+      <path d="M12 12l3-3" />
+      <circle cx="12" cy="12" r="2" />
+    </svg>
+  );
+}
+
+export function FileTextIcon({ className = "w-4 h-4" }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+      <polyline points="14 2 14 8 20 8" />
+      <line x1="16" y1="13" x2="8" y2="13" />
+      <line x1="16" y1="17" x2="8" y2="17" />
+      <polyline points="10 9 9 9 8 9" />
+    </svg>
+  );
+}
+
+export function CopyIcon({ className = "w-4 h-4" }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+      <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+    </svg>
+  );
+}
+
+export function CheckIcon({ className = "w-4 h-4" }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="20 6 9 17 4 12" />
+    </svg>
+  );
+}
+

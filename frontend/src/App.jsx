@@ -1,8 +1,8 @@
-﻿import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import ParameterPanel from './components/ParameterPanel';
 import PipelineView from './components/PipelineView';
 import ComparisonView from './components/ComparisonView';
-import { WaveformIcon, TableIcon, SettingsIcon } from './components/Icons';
+import { WaveformIcon, TableIcon, SettingsIcon, MotorSenseLogo } from './components/Icons';
 import api, { getApiBaseUrl, setApiBaseUrl } from './api';
 
 const DEFAULT_PARAMS = {
@@ -56,56 +56,54 @@ export default function App() {
 
   return (
     <div className="m1k-workbench">
-      {/* Top Bar - Analog Devices ALICE Header */}
+      {/* Precision Top Instrument Bar - MOTORSENSE Official Branding */}
       <header className="m1k-top-bar">
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-          {/* Analog Devices Corporate Logo Mark */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
-            <svg width="22" height="22" viewBox="0 0 100 100" fill="#FFFFFF">
-              <polygon points="0,0 45,0 100,100 55,100" />
-              <polygon points="55,0 100,0 80,40" />
-              <polygon points="0,100 45,100 25,60" />
-            </svg>
-            <div style={{ lineHeight: 1 }}>
-              <div style={{ fontSize: '11px', fontWeight: 900, letterSpacing: '0.12em', color: '#FFFFFF' }}>
-                ANALOG DEVICES
-              </div>
-              <div style={{ fontSize: '8px', color: '#81D4FA', letterSpacing: '0.08em', marginTop: '1px' }}>
-                AHEAD OF WHAT'S POSSIBLE™
-              </div>
-            </div>
-          </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+          {/* Custom MotorSense Stator & Wave Logo */}
+          <MotorSenseLogo size={36} />
 
-          <div style={{ width: '1px', height: '20px', background: '#335272', margin: '0 4px' }} />
-
-          {/* Software Title */}
           <div>
-            <span style={{ fontSize: '12px', fontWeight: 800, letterSpacing: '0.06em', color: '#FFFFFF' }}>
-              ALICE M1K
-            </span>
-            <span style={{ fontSize: '10px', color: '#90CAF9', marginLeft: '6px', fontFamily: 'monospace' }}>
-              [Active Learning Interface for Circuits &amp; Electronics · MCSA Analyzer]
-            </span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', lineHeight: 1 }}>
+              <span style={{ fontSize: '18px', fontWeight: 900, letterSpacing: '0.06em', color: '#FFFFFF' }}>
+                MOTORSENSE™
+              </span>
+              <span style={{ fontSize: '11px', fontFamily: 'monospace', background: '#0F3C63', color: '#7DD3FC', padding: '2px 7px', borderRadius: '3px', border: '1px solid #0284C7', fontWeight: 700 }}>
+                MCSA INDUSTRIAL ANALYZER v2.4
+              </span>
+            </div>
+            <div style={{ fontSize: '11px', color: '#90CAF9', marginTop: '4px', letterSpacing: '0.02em' }}>
+              Condition Monitoring &amp; Diagnostics of Machine Systems — Electrical Signature Analysis (ISO 20958)
+            </div>
           </div>
         </div>
 
-        {/* Top-Right Telemetry & Connection Controls */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+        {/* Top-Right Telemetry & Backend Connection Monitor */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <div style={{
-            display: 'flex', alignItems: 'center', gap: '6px', padding: '2px 8px',
-            background: 'rgba(0, 0, 0, 0.3)', border: '1px solid #1E3A5A', borderRadius: '2px',
-            fontFamily: 'monospace', fontSize: '10px', color: '#B0BEC5'
+            display: 'flex', alignItems: 'center', gap: '6px', padding: '4px 10px',
+            background: 'rgba(0, 0, 0, 0.4)', border: '1px solid #1E3A5A', borderRadius: '3px',
+            fontFamily: 'monospace', fontSize: '11px', color: '#B0BEC5'
           }}>
-            <span>M1K CLOCK:</span>
-            <strong style={{ color: '#00E5FF' }}>50.000 kS/s</strong>
+            <span>ACQ CLOCK:</span>
+            <strong style={{ color: '#00E5FF' }}>50.00 kHz</strong>
+          </div>
+
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: '6px', padding: '4px 10px',
+            background: 'rgba(0, 0, 0, 0.4)', border: '1px solid #1E3A5A', borderRadius: '3px',
+            fontFamily: 'monospace', fontSize: '11px', color: '#B0BEC5'
+          }}>
+            <span>INPUT:</span>
+            <strong style={{ color: '#00E5FF' }}>3-PHASE SYNC</strong>
           </div>
 
           <button
             type="button"
             onClick={() => setShowConfigModal(true)}
             style={{
-              display: 'flex', alignItems: 'center', gap: '5px', padding: '3px 8px',
-              borderRadius: '2px', cursor: 'pointer', fontFamily: 'monospace', fontSize: '10px',
+              display: 'flex', alignItems: 'center', gap: '6px', padding: '4px 12px',
+              borderRadius: '3px', cursor: 'pointer', fontFamily: 'monospace', fontSize: '11px',
+              fontWeight: 700,
               background: apiConnected === true ? '#0B2E1E' : '#3E1015',
               border: `1px solid ${apiConnected === true ? '#00E676' : '#FF1744'}`,
               color: apiConnected === true ? '#69F0AE' : '#FF8A80',
@@ -113,9 +111,9 @@ export default function App() {
           >
             <span className={`m1k-led ${apiConnected === true ? 'm1k-led-green' : apiConnected === false ? 'm1k-led-red' : 'm1k-led-amber'}`} />
             <span>
-              {apiConnected === true ? 'HARDWARE/API: CONNECTED' : apiConnected === false ? 'HARDWARE/API: OFFLINE' : 'CHECKING LINK...'}
+              {apiConnected === true ? 'DSP BACKEND: ONLINE' : apiConnected === false ? 'DSP BACKEND: OFFLINE' : 'CHECKING LINK...'}
             </span>
-            <SettingsIcon className="w-2.5 h-2.5 opacity-80" />
+            <SettingsIcon className="w-3 h-3 opacity-80" />
           </button>
         </div>
       </header>
@@ -128,48 +126,42 @@ export default function App() {
             className={`btn-m1k-tab ${activeTab === 'pipeline' ? 'active' : ''}`}
             onClick={() => setActiveTab('pipeline')}
           >
-            OSCILLOSCOPE &amp; 7-STAGE MCSA SPECTRUM
+            [01] OSCILLOSCOPE &amp; 7-STAGE MCSA SPECTRUM
           </button>
           <button
             type="button"
             className={`btn-m1k-tab ${activeTab === 'comparison' ? 'active' : ''}`}
             onClick={() => setActiveTab('comparison')}
           >
-            DUAL-CHANNEL BENCHMARK (CHA vs CHB)
+            [02] DUAL-CHANNEL BENCHMARK (HEALTHY vs FAULTY)
           </button>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '10px', fontFamily: 'monospace', color: '#475569' }}>
-          <span>CHANNEL A: <strong style={{ color: '#00B8D4' }}>{params.column} (STATOR CURRENT)</strong></span>
-          <span>·</span>
-          <span>TRIG: <strong style={{ color: '#059669' }}>AUTO (50 Hz)</strong></span>
-          <span>·</span>
-          <span>WINDOW: <strong style={{ color: '#2563EB' }}>HANN FFT</strong></span>
+        <div style={{ fontSize: '12px', color: '#475569', fontFamily: 'monospace', fontWeight: 600 }}>
+          STANDARDS: <strong>ISO 20958-1</strong> / <strong>IEEE Std 1415</strong>
         </div>
       </div>
 
-      {/* Main Workbench Workspace */}
+      {/* Main Instrumentation Console Workspace */}
       <div className="m1k-workspace">
-        {/* Left Control Deck */}
+        {/* Left Parameter Deck */}
         <aside className="m1k-controls-deck">
           <ParameterPanel params={params} updateParam={updateParam} />
         </aside>
 
         {/* Central Instrument Screen Housing */}
         <main className="m1k-screen-housing">
-          {/* Top Screen Status Banner */}
           <div className="m1k-screen-banner">
-            <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-              <span style={{ color: '#00E5FF', fontWeight: 700 }}>● CH A: {params.column} (500mA/div)</span>
-              <span style={{ color: '#FFB300' }}>● FILTER: 1.0 - 200.0 Hz</span>
-              <span style={{ color: '#90CAF9' }}>● TIMEBASE: 50 kS/s</span>
-            </div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <span>ISO 20958 COMPLIANT</span>
+            <span style={{ fontSize: '12px', fontWeight: 700, color: '#64B5F6' }}>
+              VIRTUAL BENCH: {activeTab === 'pipeline' ? '7-STAGE MCSA DSP PIPELINE WALKTHROUGH' : 'DUAL-CHANNEL MCSA BENCHMARK'}
+            </span>
+            <div style={{ display: 'flex', gap: '16px', fontSize: '11px' }}>
+              <span>ACQUISITION: <strong>50 kS/s</strong></span>
+              <span>FILTER: <strong>SOS BUTTERWORTH</strong></span>
+              <span>TRIGGER: <strong>AUTO</strong></span>
             </div>
           </div>
 
-          {/* Scope / Spectrum Canvas */}
           <div className="m1k-screen-content">
             {activeTab === 'pipeline' ? (
               <PipelineView params={params} updateParam={updateParam} />
@@ -180,66 +172,72 @@ export default function App() {
         </main>
       </div>
 
-      {/* Bottom Status Bar */}
-      <footer className="m1k-statusbar">
-        <div>
-          <span>ADALM1000 MCSA INSTRUMENT SUITE</span>
-          <span style={{ margin: '0 6px' }}>|</span>
-          <span>ANALOG DEVICES INC.</span>
-          <span style={{ margin: '0 6px' }}>|</span>
-          <span>ACQ: 50.000 kHz / 9-CHANNEL SYNCHRONOUS</span>
+      {/* Status Bar */}
+      <div className="m1k-statusbar">
+        <div style={{ display: 'flex', gap: '18px' }}>
+          <span>STATUS: <strong>SYSTEM READY</strong></span>
+          <span>WINDOW: <strong>HANNING (100% ENERGY CONSERVATION)</strong></span>
+          <span>EVALUATION: <strong>ISO 20958 STATOR CURRENT SIGNATURE</strong></span>
         </div>
         <div>
-          <span>ALICE M1K GUI v2.4</span>
+          <span>MOTORSENSE DSP KERNEL v2.4</span>
         </div>
-      </footer>
+      </div>
 
-      {/* Backend URL Modal */}
+      {/* Backend Connection Modal */}
       {showConfigModal && (
         <div className="inst-modal-backdrop">
-          <div className="inst-modal-window">
-            <div style={{ padding: '8px 12px', background: '#002B49', color: '#FFFFFF', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span style={{ fontSize: '11px', fontWeight: 700, fontFamily: 'monospace' }}>
-                ANALOG DEVICES M1K HARDWARE / API CONFIGURATION
+          <div className="inst-modal-window" style={{ maxWidth: '520px' }}>
+            <div style={{ padding: '12px 18px', background: '#0F172A', color: '#FFFFFF', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span style={{ fontSize: '13px', fontWeight: 800, fontFamily: 'monospace' }}>
+                CONFIGURE DSP BACKEND HOST URL
               </span>
               <button
                 type="button"
                 onClick={() => setShowConfigModal(false)}
-                style={{ background: 'transparent', border: 'none', color: '#90CAF9', cursor: 'pointer', fontSize: '14px' }}
+                style={{ background: 'transparent', border: 'none', color: '#94A3B8', cursor: 'pointer', fontSize: '18px' }}
               >
                 ✕
               </button>
             </div>
 
-            <div style={{ padding: '14px', fontSize: '11px', color: '#1E293B', background: '#EDEFF2' }}>
-              <p style={{ margin: '0 0 10px 0', lineHeight: 1.4 }}>
-                Enter the remote Render API endpoint for the MotorSense DSP kernel. Leave empty to use local proxy (<code>/api</code>).
+            <div style={{ padding: '18px', fontSize: '13px', color: '#334155' }}>
+              <p style={{ margin: '0 0 12px 0', lineHeight: 1.5 }}>
+                Enter the remote Python FastAPI DSP processing kernel URL. Leave empty to use local relative proxy (<code>/api</code>).
               </p>
 
-              <label className="inst-label">Remote API Endpoint Host URL:</label>
+              <label className="inst-label" style={{ fontSize: '12px', fontWeight: 700, display: 'block', marginBottom: '4px' }}>
+                Remote API Endpoint URL:
+              </label>
               <input
                 type="text"
                 placeholder="https://motorsense-api.onrender.com"
                 value={customApiUrl}
                 onChange={(e) => setCustomApiUrl(e.target.value)}
-                className="m1k-input"
-                style={{ marginBottom: '12px', height: '28px' }}
+                className="inst-input"
+                style={{ width: '100%', height: '34px', fontSize: '13px', padding: '4px 8px', marginBottom: '14px', border: '1px solid #CBD5E1', borderRadius: '3px' }}
               />
 
-              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '6px' }}>
+              <div style={{ fontSize: '12px', color: '#64748B', background: '#F8FAFC', padding: '10px', border: '1px solid #E2E8F0', borderRadius: '3px', marginBottom: '18px' }}>
+                <strong>Health Verification:</strong> Checks <code>GET /api/health</code> to verify low-latency NumPy/SciPy MCSA execution environment.
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '10px' }}>
                 <button
                   type="button"
                   onClick={() => setShowConfigModal(false)}
                   className="btn-m1k"
+                  style={{ height: '34px', fontSize: '12px' }}
                 >
                   Cancel
                 </button>
                 <button
                   type="button"
                   onClick={saveApiUrl}
-                  className="btn-m1k btn-m1k-run"
+                  className="btn-m1k-run"
+                  style={{ height: '34px', fontSize: '12px', padding: '0 14px' }}
                 >
-                  Save &amp; Connect Link
+                  Save &amp; Verify Handshake
                 </button>
               </div>
             </div>

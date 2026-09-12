@@ -1,10 +1,10 @@
-﻿@tailwind base;
+@tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 /* ==========================================================================
-   ANALOG DEVICES — ALICE M1K (Active Learning Interface for Current & Electronics)
-   Motor Current Signature Analysis (MCSA) Test Bench UI
+   MOTORSENSE™ MCSA INDUSTRIAL ANALYZER
+   Virtual Bench Instrumentation Design System
    ========================================================================== */
 
 :root {
@@ -18,8 +18,6 @@
   --m1k-chb-color: #FFB300;
   --m1k-alarm-color: #FF3D00;
   --m1k-normal-color: #00E676;
-  --adi-blue: #003865;
-  --adi-dark: #001B3A;
 }
 
 *, *::before, *::after {
@@ -34,7 +32,7 @@ body {
   padding: 0;
   height: 100vh;
   overflow: hidden;
-  user-select: none;
+  font-size: 13px;
 }
 
 .font-mono {
@@ -42,7 +40,7 @@ body {
   font-variant-numeric: tabular-nums;
 }
 
-/* ALICE Workbench Shell */
+/* Workbench Shell */
 .m1k-workbench {
   display: flex;
   flex-direction: column;
@@ -50,27 +48,27 @@ body {
   background: var(--m1k-bg);
 }
 
-/* Analog Devices Instrument Bar */
+/* Precision Top Instrument Bar */
 .m1k-top-bar {
-  height: 44px;
-  background: linear-gradient(180deg, #002B49 0%, #001C30 100%);
-  border-bottom: 2px solid #001220;
+  height: 52px;
+  background: linear-gradient(180deg, #00223A 0%, #001524 100%);
+  border-bottom: 2px solid #000E18;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 12px;
+  padding: 0 16px;
   color: #FFFFFF;
 }
 
 /* Hardware Menu Toolstrip */
 .m1k-toolstrip {
-  height: 36px;
+  height: 38px;
   background: #D5D8DE;
   border-bottom: 1px solid #A0A5AD;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 10px;
+  padding: 0 14px;
 }
 
 /* Main Workbench Workspace */
@@ -82,12 +80,12 @@ body {
   gap: 8px;
 }
 
-/* Right/Left Control Deck */
+/* Left Parameter Controls Deck */
 .m1k-controls-deck {
   width: 320px;
   background: var(--m1k-panel);
   border: 1px solid var(--m1k-panel-border);
-  border-radius: 3px;
+  border-radius: 4px;
   box-shadow: inset 1px 1px 0 #FFFFFF, 1px 1px 3px rgba(0,0,0,0.15);
   display: flex;
   flex-direction: column;
@@ -109,15 +107,15 @@ body {
 
 /* Screen Top Header */
 .m1k-screen-banner {
-  height: 28px;
+  height: 32px;
   background: #101624;
   border-bottom: 1px solid #222E46;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 12px;
+  padding: 0 14px;
   font-family: "JetBrains Mono", monospace;
-  font-size: 11px;
+  font-size: 12px;
   color: #81A1C1;
 }
 
@@ -129,11 +127,11 @@ body {
   background: var(--m1k-screen-bg);
 }
 
-/* ALICE Hardware Modules */
+/* Hardware Control Modules */
 .m1k-module {
   background: #E4E7EC;
   border: 1px solid #B4B9C2;
-  border-radius: 3px;
+  border-radius: 4px;
   margin: 6px;
   box-shadow: inset 1px 1px 0 #FFFFFF;
 }
@@ -141,11 +139,11 @@ body {
 .m1k-module-title {
   background: linear-gradient(180deg, #D0D4DC 0%, #B8BDC7 100%);
   border-bottom: 1px solid #9AA0AA;
-  padding: 4px 8px;
-  font-size: 10px;
+  padding: 6px 10px;
+  font-size: 11px;
   font-weight: 800;
-  color: #2D3748;
-  letter-spacing: 0.08em;
+  color: #1E293B;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   display: flex;
   align-items: center;
@@ -153,24 +151,24 @@ body {
 }
 
 .m1k-module-body {
-  padding: 8px;
+  padding: 10px;
 }
 
-/* ALICE Buttons */
+/* Tactile Push Buttons */
 .btn-m1k {
-  height: 26px;
-  padding: 0 10px;
-  font-size: 11px;
+  height: 30px;
+  padding: 0 12px;
+  font-size: 12px;
   font-weight: 700;
   border-radius: 3px;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
+  gap: 6px;
   transition: all 0.1s;
   text-transform: uppercase;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.03em;
   border: 1px solid #808894;
   background: linear-gradient(180deg, #FFFFFF 0%, #D8DCE3 100%);
   color: #1A202C;
@@ -197,25 +195,21 @@ body {
   background: linear-gradient(180deg, #34D399 0%, #059669 100%);
 }
 
-.btn-m1k-stop {
-  background: linear-gradient(180deg, #EF4444 0%, #DC2626 100%);
-  color: #FFFFFF;
-  border-color: #B91C1C;
-  text-shadow: 0 -1px 0 rgba(0,0,0,0.3);
-}
-
 .btn-m1k-tab {
-  height: 28px;
-  padding: 0 12px;
-  font-size: 11px;
+  height: 30px;
+  padding: 0 14px;
+  font-size: 12px;
   font-weight: 700;
   background: #C4C8D0;
   color: #334155;
   border: 1px solid #9CA3AF;
   border-bottom: none;
-  border-radius: 3px 3px 0 0;
-  margin-right: 3px;
+  border-radius: 4px 4px 0 0;
+  margin-right: 4px;
   cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
 .btn-m1k-tab.active {
@@ -227,8 +221,8 @@ body {
 
 /* LED Indicators */
 .m1k-led {
-  width: 9px;
-  height: 9px;
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
   border: 1px solid rgba(0,0,0,0.4);
   display: inline-block;
@@ -236,30 +230,30 @@ body {
 
 .m1k-led-green {
   background: #00E676;
-  box-shadow: 0 0 6px #00E676;
+  box-shadow: 0 0 8px #00E676;
 }
 
 .m1k-led-red {
   background: #FF1744;
-  box-shadow: 0 0 6px #FF1744;
+  box-shadow: 0 0 8px #FF1744;
 }
 
 .m1k-led-amber {
   background: #FFD600;
-  box-shadow: 0 0 6px #FFD600;
+  box-shadow: 0 0 8px #FFD600;
 }
 
 /* Input Fields */
 .m1k-input {
   width: 100%;
-  height: 24px;
-  padding: 2px 6px;
+  height: 28px;
+  padding: 3px 8px;
   font-family: "JetBrains Mono", monospace;
-  font-size: 11px;
+  font-size: 13px;
   color: #0F172A;
   background: #FFFFFF;
   border: 1px solid #94A3B8;
-  border-radius: 2px;
+  border-radius: 3px;
 }
 
 .m1k-input:focus {
@@ -268,12 +262,12 @@ body {
   box-shadow: 0 0 0 1px #005A9C;
 }
 
-/* Measurement Grid */
+/* Measurement Rows */
 .m1k-metric-row {
   display: flex;
   justify-content: space-between;
-  padding: 3px 0;
-  font-size: 11px;
+  padding: 4px 0;
+  font-size: 12px;
   border-bottom: 1px solid #D5D9E0;
 }
 
@@ -289,14 +283,116 @@ body {
 
 /* Bottom Status Bar */
 .m1k-statusbar {
-  height: 22px;
+  height: 26px;
   background: #C8CCD4;
   border-top: 1px solid #A4A9B2;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 10px;
+  padding: 0 14px;
   font-family: "JetBrains Mono", monospace;
-  font-size: 10px;
+  font-size: 11px;
   color: #334155;
+}
+
+/* Modals */
+.inst-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 16px;
+}
+
+.inst-modal-window {
+  background: #FFFFFF;
+  border-radius: 6px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  overflow: hidden;
+  width: 100%;
+}
+
+.inst-spinner {
+  width: 20px;
+  height: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  border-top-color: #FFFFFF;
+  animation: spin 0.8s linear infinite;
+  display: inline-block;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* ==========================================================================
+   STRICT PRINT STYLING FOR ISO 20958 REPORT
+   Hides the whole application chrome and outputs ONLY the clean data report
+   ========================================================================== */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 12mm;
+  }
+
+  html, body {
+    background: #FFFFFF !important;
+    color: #0F172A !important;
+    font-size: 12pt !important;
+    height: auto !important;
+    overflow: visible !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  /* Hide entire web app interface */
+  .m1k-workbench,
+  .m1k-top-bar,
+  .m1k-toolstrip,
+  .m1k-workspace,
+  .m1k-controls-deck,
+  .m1k-screen-banner,
+  .m1k-statusbar,
+  button,
+  .btn-m1k,
+  .btn-m1k-run {
+    display: none !important;
+  }
+
+  /* Force modal backdrop and window to act as static full-page document */
+  .inst-modal-backdrop {
+    position: static !important;
+    background: #FFFFFF !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+  }
+
+  .inst-modal-window {
+    position: static !important;
+    max-width: 100% !important;
+    max-height: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+    width: 100% !important;
+  }
+
+  /* Display ONLY the printable report document */
+  #printable-iso-report {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: visible !important;
+    background: #FFFFFF !important;
+    color: #0F172A !important;
+  }
 }

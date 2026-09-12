@@ -1,14 +1,14 @@
-﻿import React from 'react';
+import React from 'react';
 import { SettingsIcon, CpuIcon } from './Icons';
 
 export default function ParameterPanel({ params, updateParam }) {
   const renderNumberInput = (key, label, min, max, step, unit) => (
-    <div style={{ marginBottom: '6px' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2px' }}>
-        <span style={{ fontSize: '10px', fontWeight: 700, color: '#334155', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+    <div style={{ marginBottom: '8px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '3px' }}>
+        <span style={{ fontSize: '12px', fontWeight: 700, color: '#334155', textTransform: 'uppercase', letterSpacing: '0.03em' }}>
           {label}
         </span>
-        {unit && <span style={{ fontSize: '9px', color: '#64748B', fontFamily: 'monospace' }}>[{unit}]</span>}
+        {unit && <span style={{ fontSize: '11px', color: '#64748B', fontFamily: 'monospace' }}>[{unit}]</span>}
       </div>
       <input
         className="m1k-input"
@@ -27,12 +27,12 @@ export default function ParameterPanel({ params, updateParam }) {
       {/* Module 1: Timebase / Acquisition */}
       <div className="m1k-module">
         <div className="m1k-module-title">
-          <span>TIMEBASE &amp; POWER</span>
-          <span className="font-mono text-[9px] text-slate-600">ACQ_01</span>
+          <span>TIMEBASE &amp; ACQUISITION</span>
+          <span className="font-mono text-[11px] text-slate-600">ACQ_01</span>
         </div>
         <div className="m1k-module-body">
-          {renderNumberInput('fs', 'Sample Rate (fs)', 1000, 200000, 1000, 'Hz')}
-          {renderNumberInput('f_supply', 'Carrier (f₀)', 1, 400, 0.5, 'Hz')}
+          {renderNumberInput('fs', 'Sampling Rate (fs)', 1000, 200000, 1000, 'Hz')}
+          {renderNumberInput('f_supply', 'Supply Frequency (f₀)', 1, 400, 0.5, 'Hz')}
         </div>
       </div>
 
@@ -40,11 +40,11 @@ export default function ParameterPanel({ params, updateParam }) {
       <div className="m1k-module">
         <div className="m1k-module-title">
           <span>MOTOR NAMEPLATE</span>
-          <span className="font-mono text-[9px] text-slate-600">DUT_SPEC</span>
+          <span className="font-mono text-[11px] text-slate-600">DUT_SPEC</span>
         </div>
         <div className="m1k-module-body">
           {renderNumberInput('rated_rpm', 'Rated Speed (Nr)', 1, 30000, 10, 'RPM')}
-          {renderNumberInput('poles', 'Poles (2p)', 2, 32, 2, 'P')}
+          {renderNumberInput('poles', 'Stator Poles (2p)', 2, 32, 2, 'P')}
         </div>
       </div>
 
@@ -52,7 +52,7 @@ export default function ParameterPanel({ params, updateParam }) {
       <div className="m1k-module">
         <div className="m1k-module-title">
           <span>FILTER (SOS BUTTERWORTH)</span>
-          <span className="font-mono text-[9px] text-slate-600">DSP_FLT</span>
+          <span className="font-mono text-[11px] text-slate-600">DSP_FLT</span>
         </div>
         <div className="m1k-module-body">
           {renderNumberInput('low_cut', 'High-Pass Cutoff', 0.1, 1000, 0.5, 'Hz')}
@@ -65,10 +65,10 @@ export default function ParameterPanel({ params, updateParam }) {
       <div className="m1k-module">
         <div className="m1k-module-title">
           <span>DIAGNOSTIC THRESHOLD</span>
-          <span className="font-mono text-[9px] text-slate-600">ISO_20958</span>
+          <span className="font-mono text-[11px] text-slate-600">ISO_20958</span>
         </div>
         <div className="m1k-module-body">
-          {renderNumberInput('threshold_dB', 'Alarm Level', -80, 0, 1, 'dBFS')}
+          {renderNumberInput('threshold_dB', 'Alarm Limit', -80, 0, 1, 'dBFS')}
         </div>
       </div>
 
@@ -76,20 +76,20 @@ export default function ParameterPanel({ params, updateParam }) {
       <div className="m1k-module">
         <div className="m1k-module-title">
           <span>CALCULATED KINEMATICS</span>
-          <CpuIcon className="w-3 h-3 text-slate-700" />
+          <CpuIcon className="w-3.5 h-3.5 text-slate-700" />
         </div>
         <div className="m1k-module-body">
-          <M1kKinematics params={params} />
+          <KinematicsDisplay params={params} />
         </div>
       </div>
 
-      {/* Module 6: Hardware Info */}
+      {/* Module 6: Hardware Benchmark Info */}
       <div className="m1k-module" style={{ marginBottom: '10px' }}>
         <div className="m1k-module-title">
-          <span>BENCHMARK DATASET</span>
+          <span>BENCHMARK MOTOR REFERENCE</span>
         </div>
-        <div className="m1k-module-body" style={{ fontSize: '10px', color: '#475569', lineHeight: 1.4 }}>
-          <div>0.2 kW 3-Phase Induction Motor. 9 synchronous channels at 50 kHz.</div>
+        <div className="m1k-module-body" style={{ fontSize: '11px', color: '#475569', lineHeight: 1.5 }}>
+          <div>0.2 kW 3-Phase Squirrel-Cage Induction Motor. 9 synchronous channels at 50 kS/s.</div>
           <div style={{ marginTop: '4px' }}>
             <a
               href="https://www.nature.com/articles/s41597-025-05437-3"
@@ -106,7 +106,7 @@ export default function ParameterPanel({ params, updateParam }) {
   );
 }
 
-function M1kKinematics({ params }) {
+function KinematicsDisplay({ params }) {
   const { f_supply, rated_rpm, poles } = params;
   if (!f_supply || !rated_rpm || !poles) return null;
 
@@ -118,18 +118,18 @@ function M1kKinematics({ params }) {
 
   const rows = [
     ['Sync Speed (Ns)', `${Ns.toFixed(0)} RPM`],
-    ['Slip Ratio (s)', `${(s * 100).toFixed(3)} %`],
-    ['Slip Freq (fs)', `${f_slip.toFixed(3)} Hz`],
-    ['Lower SB (f-2sf)', `${f_low.toFixed(3)} Hz`],
-    ['Upper SB (f+2sf)', `${f_up.toFixed(3)} Hz`],
+    ['Slip Ratio (s)', `${(s * 100).toFixed(2)} %`],
+    ['Slip Frequency (f_s)', `${f_slip.toFixed(2)} Hz`],
+    ['Lower SB (f₀ - 2sf₀)', `${f_low.toFixed(2)} Hz`],
+    ['Upper SB (f₀ + 2sf₀)', `${f_up.toFixed(2)} Hz`],
   ];
 
   return (
-    <div>
-      {rows.map(([lbl, val]) => (
-        <div key={lbl} className="m1k-metric-row">
-          <span className="m1k-metric-label">{lbl}</span>
-          <span className="m1k-metric-value">{val}</span>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '3px' }}>
+      {rows.map(([label, val]) => (
+        <div key={label} className="m1k-metric-row">
+          <span className="m1k-metric-label" style={{ fontSize: '11px' }}>{label}</span>
+          <span className="m1k-metric-value" style={{ fontSize: '11px' }}>{val}</span>
         </div>
       ))}
     </div>

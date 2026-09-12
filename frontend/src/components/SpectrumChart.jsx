@@ -1,33 +1,33 @@
-﻿import React, { useState } from 'react';
+import React, { useState } from 'react';
 import Plot from 'react-plotly.js';
 
-export const ALICE_SCREEN_LAYOUT = {
+export const MOTORSENSE_SCREEN_LAYOUT = {
   paper_bgcolor: '#090D16',
   plot_bgcolor: '#090D16',
-  font: { family: 'JetBrains Mono, monospace', color: '#90CAF9', size: 10 },
+  font: { family: 'JetBrains Mono, monospace', color: '#90CAF9', size: 12 },
   xaxis: {
     gridcolor: '#152033',
     linecolor: '#263852',
-    tickfont: { family: 'monospace', size: 9, color: '#64B5F6' },
+    tickfont: { family: 'monospace', size: 11, color: '#90CAF9' },
     zerolinecolor: '#263852',
-    title: { font: { size: 10, color: '#90CAF9' } },
+    title: { font: { size: 12, color: '#90CAF9' } },
   },
   yaxis: {
     gridcolor: '#152033',
     linecolor: '#263852',
-    tickfont: { family: 'monospace', size: 9, color: '#64B5F6' },
+    tickfont: { family: 'monospace', size: 11, color: '#90CAF9' },
     zerolinecolor: '#263852',
-    title: { font: { size: 10, color: '#90CAF9' } },
+    title: { font: { size: 12, color: '#90CAF9' } },
   },
-  margin: { l: 50, r: 20, t: 20, b: 40 },
+  margin: { l: 55, r: 25, t: 25, b: 45 },
   showlegend: true,
   legend: {
     bgcolor: 'rgba(9, 13, 22, 0.9)',
     bordercolor: '#263852',
     borderwidth: 1,
-    font: { size: 9, color: '#E0E6ED', family: 'monospace' },
+    font: { size: 11, color: '#E0E6ED', family: 'monospace' },
   },
-  hoverlabel: { bgcolor: '#002B49', bordercolor: '#00E5FF', font: { family: 'monospace', color: '#FFFFFF' } },
+  hoverlabel: { bgcolor: '#002B49', bordercolor: '#00E5FF', font: { family: 'monospace', color: '#FFFFFF', size: 12 } },
 };
 
 export default function SpectrumChart({
@@ -38,14 +38,14 @@ export default function SpectrumChart({
   yZoom,
   xLabel = 'Frequency (Hz)',
   yLabel = 'Magnitude',
-  traceName = 'CH A (FFT)',
+  traceName = 'Stator Current FFT',
   traceColor = '#00E5FF',
   f_supply,
   f_sb_lower,
   f_sb_upper,
   extraTraces = [],
   defaultView = 'zoom',
-  height = 250,
+  height = 270,
 }) {
   const [view, setView] = useState(defaultView);
   const x = view === 'zoom' && xZoom && xZoom.length > 0 ? xZoom : xFull;
@@ -62,15 +62,15 @@ export default function SpectrumChart({
       yref: 'paper',
       y0: 0,
       y1: 1,
-      line: { color: '#2979FF', width: 1.5, dash: 'solid' },
+      line: { color: '#2979FF', width: 2, dash: 'solid' },
     });
     annotations.push({
       x: f_supply,
       yref: 'paper',
       y: 0.96,
-      text: `f₀: ${f_supply.toFixed(1)}Hz`,
+      text: `Carrier f₀: ${f_supply.toFixed(1)}Hz`,
       showarrow: false,
-      font: { size: 9, color: '#2979FF', family: 'monospace' },
+      font: { size: 11, color: '#2979FF', family: 'monospace', weight: 700 },
       bgcolor: 'rgba(9, 13, 22, 0.9)',
       bordercolor: '#2979FF',
       borderwidth: 1,
@@ -85,7 +85,7 @@ export default function SpectrumChart({
       yref: 'paper',
       y0: 0,
       y1: 1,
-      line: { color: '#FF1744', width: 1.5, dash: 'dot' },
+      line: { color: '#FF1744', width: 2, dash: 'dot' },
     });
     annotations.push({
       x: f_sb_lower,
@@ -93,7 +93,7 @@ export default function SpectrumChart({
       y: 0.84,
       text: `SB-: ${f_sb_lower.toFixed(2)}Hz`,
       showarrow: false,
-      font: { size: 9, color: '#FF1744', family: 'monospace' },
+      font: { size: 11, color: '#FF1744', family: 'monospace', weight: 700 },
       bgcolor: 'rgba(9, 13, 22, 0.9)',
       bordercolor: '#FF1744',
       borderwidth: 1,
@@ -108,7 +108,7 @@ export default function SpectrumChart({
       yref: 'paper',
       y0: 0,
       y1: 1,
-      line: { color: '#FF1744', width: 1.5, dash: 'dot' },
+      line: { color: '#FF1744', width: 2, dash: 'dot' },
     });
     annotations.push({
       x: f_sb_upper,
@@ -116,7 +116,7 @@ export default function SpectrumChart({
       y: 0.84,
       text: `SB+: ${f_sb_upper.toFixed(2)}Hz`,
       showarrow: false,
-      font: { size: 9, color: '#FF1744', family: 'monospace' },
+      font: { size: 11, color: '#FF1744', family: 'monospace', weight: 700 },
       bgcolor: 'rgba(9, 13, 22, 0.9)',
       bordercolor: '#FF1744',
       borderwidth: 1,
@@ -130,63 +130,59 @@ export default function SpectrumChart({
       type: 'scatter',
       mode: 'lines',
       name: traceName,
-      line: { color: traceColor, width: 1.5 },
+      line: { color: traceColor, width: 1.8 },
     },
     ...extraTraces,
   ];
 
-  const layout = {
-    ...ALICE_SCREEN_LAYOUT,
-    height,
-    shapes,
-    annotations,
-    xaxis: { ...ALICE_SCREEN_LAYOUT.xaxis, title: { text: xLabel, font: { size: 10, color: '#90CAF9' } } },
-    yaxis: { ...ALICE_SCREEN_LAYOUT.yaxis, title: { text: yLabel, font: { size: 10, color: '#90CAF9' } } },
-  };
-
   return (
-    <div style={{ background: '#090D16', border: '1px solid #1F2C42', borderRadius: '2px', padding: '6px' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px', padding: '0 4px' }}>
-        <div style={{ fontSize: '11px', fontWeight: 700, color: '#64B5F6', fontFamily: 'monospace' }}>
+    <div style={{ background: '#090D16', border: '1px solid #1C293E', borderRadius: '4px', padding: '8px' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px', padding: '0 4px' }}>
+        <span style={{ fontSize: '13px', fontFamily: 'monospace', fontWeight: 700, color: '#00E5FF' }}>
           {title}
+        </span>
+        <div style={{ display: 'flex', gap: '6px' }}>
+          <button
+            type="button"
+            className="btn-m1k"
+            style={{
+              height: '24px',
+              fontSize: '11px',
+              background: view === 'zoom' ? '#0F3C63' : '#141E30',
+              color: view === 'zoom' ? '#FFFFFF' : '#94A3B8',
+              borderColor: view === 'zoom' ? '#0284C7' : '#223450',
+            }}
+            onClick={() => setView('zoom')}
+          >
+            Zoom [40 - 60 Hz]
+          </button>
+          <button
+            type="button"
+            className="btn-m1k"
+            style={{
+              height: '24px',
+              fontSize: '11px',
+              background: view === 'full' ? '#0F3C63' : '#141E30',
+              color: view === 'full' ? '#FFFFFF' : '#94A3B8',
+              borderColor: view === 'full' ? '#0284C7' : '#223450',
+            }}
+            onClick={() => setView('full')}
+          >
+            Full [0 - 200 Hz]
+          </button>
         </div>
-        {xZoom && xFull && (
-          <div style={{ display: 'flex', gap: '4px' }}>
-            <button
-              type="button"
-              className="btn-m1k"
-              style={{
-                height: '20px', fontSize: '9px', padding: '0 6px',
-                background: view === 'zoom' ? '#00E5FF' : '#1A2333',
-                color: view === 'zoom' ? '#000000' : '#81A1C1',
-                borderColor: view === 'zoom' ? '#00B8D4' : '#2C3E5A',
-                fontWeight: 700
-              }}
-              onClick={() => setView('zoom')}
-            >
-              ZOOM (±50 Hz)
-            </button>
-            <button
-              type="button"
-              className="btn-m1k"
-              style={{
-                height: '20px', fontSize: '9px', padding: '0 6px',
-                background: view === 'full' ? '#00E5FF' : '#1A2333',
-                color: view === 'full' ? '#000000' : '#81A1C1',
-                borderColor: view === 'full' ? '#00B8D4' : '#2C3E5A',
-                fontWeight: 700
-              }}
-              onClick={() => setView('full')}
-            >
-              FULL SPAN (25 kHz)
-            </button>
-          </div>
-        )}
       </div>
 
       <Plot
         data={traces}
-        layout={layout}
+        layout={{
+          ...MOTORSENSE_SCREEN_LAYOUT,
+          height,
+          shapes,
+          annotations,
+          xaxis: { ...MOTORSENSE_SCREEN_LAYOUT.xaxis, title: { text: xLabel, font: { size: 12, color: '#90CAF9' } } },
+          yaxis: { ...MOTORSENSE_SCREEN_LAYOUT.yaxis, title: { text: yLabel, font: { size: 12, color: '#90CAF9' } } },
+        }}
         config={{ responsive: true, displayModeBar: true, displaylogo: false, scrollZoom: true }}
         style={{ width: '100%' }}
         useResizeHandler

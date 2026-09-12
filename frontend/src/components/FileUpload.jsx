@@ -1,4 +1,4 @@
-﻿import React, { useRef, useState, useEffect } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { UploadIcon, WaveformIcon } from './Icons';
 import api from '../api';
 
@@ -11,7 +11,7 @@ export default function FileUpload({
   selectedColumn,
   onColumnChange,
   onSampleSelect,
-  label = 'INPUT STREAM & CHANNEL SELECTION',
+  onDemoLoad,
 }) {
   const [dragOver, setDragOver] = useState(false);
   const [file, setFile] = useState(null);
@@ -76,6 +76,46 @@ export default function FileUpload({
 
   return (
     <div style={{ padding: '2px' }}>
+      {/* 1-Click Test Presets (Allows immediate testing without uploading files) */}
+      <div style={{
+        background: '#0D1524',
+        border: '1px solid #1E2E4A',
+        borderRadius: '4px',
+        padding: '8px 12px',
+        marginBottom: '10px',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        flexWrap: 'wrap',
+        gap: '8px'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+          <span style={{ fontSize: '11px', fontWeight: 800, color: '#90CAF9', fontFamily: 'monospace', textTransform: 'uppercase' }}>
+            ⚡ QUICK DEMO PRESETS:
+          </span>
+          <span style={{ fontSize: '11px', color: '#64748B' }}>(1-Click Instant Evaluation)</span>
+        </div>
+
+        <div style={{ display: 'flex', gap: '8px' }}>
+          <button
+            type="button"
+            className="btn-m1k"
+            style={{ height: '28px', fontSize: '11px', background: '#092518', color: '#4ADE80', borderColor: '#15803D' }}
+            onClick={() => onSampleSelect && onSampleSelect('FILE 1.mat')}
+          >
+            ● Healthy Motor Baseline (FILE 1)
+          </button>
+          <button
+            type="button"
+            className="btn-m1k"
+            style={{ height: '28px', fontSize: '11px', background: '#2E090F', color: '#F87171', borderColor: '#991B1B' }}
+            onClick={() => onSampleSelect && onSampleSelect('FILE 6.mat')}
+          >
+            ▲ Broken Rotor Bar Fault (FILE 6)
+          </button>
+        </div>
+      </div>
+
       {/* File Ingestion Drop Area */}
       <div
         onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
@@ -85,8 +125,8 @@ export default function FileUpload({
         style={{
           border: dragOver ? '2px dashed #00E5FF' : file && !error ? '1px solid #00E676' : '1px dashed #718096',
           background: dragOver ? '#1A2942' : file && !error ? '#0E1F1A' : '#141A28',
-          borderRadius: '3px',
-          padding: '16px 12px',
+          borderRadius: '4px',
+          padding: '16px 14px',
           textAlign: 'center',
           cursor: 'pointer',
           color: '#CBD5E1',
@@ -101,107 +141,56 @@ export default function FileUpload({
           onChange={(e) => {
             const f = e.target.files[0];
             if (f) handleFile(f);
-            e.target.value = '';
           }}
         />
 
-        {parsing ? (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px' }}>
-            <div className="inst-spinner" style={{ width: '22px', height: '22px', borderTopColor: '#00E5FF' }} />
-            <div style={{ fontSize: '11px', fontFamily: 'monospace', color: '#00E5FF', fontWeight: 700 }}>
-              STREAMING MULTI-CHANNEL BUFFER (50 kHz)...
-            </div>
-          </div>
-        ) : file && !error ? (
-          <div>
-            <div style={{ color: '#00E676', fontSize: '11px', fontFamily: 'monospace', fontWeight: 700 }}>
-              ● BUFFER READY: {file.name}
-            </div>
-            <div style={{ fontSize: '10px', color: '#94A3B8', fontFamily: 'monospace', marginTop: '2px' }}>
-              Size: {(file.size / 1e6).toFixed(2)} MB · Click or drop file to reload
-            </div>
-          </div>
-        ) : (
-          <div>
-            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '4px' }}>
-              <UploadIcon className="w-5 h-5 text-cyan-400" />
-            </div>
-            <div style={{ fontSize: '12px', fontWeight: 700, color: '#F1F5F9', letterSpacing: '0.02em' }}>
-              LOAD MOTOR SIGNAL DATA (.CSV / .MAT)
-            </div>
-            <div style={{ fontSize: '10px', color: '#64B5F6', fontFamily: 'monospace', marginTop: '2px' }}>
-              50 kHz 9-Channel Synchronized Data Stream
-            </div>
-          </div>
-        )}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', marginBottom: '4px' }}>
+          <UploadIcon className="w-5 h-5 text-sky-400" />
+          <span style={{ fontSize: '13px', fontWeight: 700, color: '#E2E8F0' }}>
+            {file ? file.name : 'Upload Stator Current Dataset (.csv or .mat)'}
+          </span>
+        </div>
+
+        <div style={{ fontSize: '11px', color: '#94A3B8' }}>
+          {file
+            ? `${(file.size / 1e6).toFixed(2)} MB · Drop new file or click to replace`
+            : 'Supports 9-channel synchronous motor recordings at 50 kS/s or custom MCSA CSV logs'}
+        </div>
       </div>
 
       {error && (
-        <div style={{ marginTop: '6px', background: '#3E1010', border: '1px solid #FF1744', color: '#FF8A80', padding: '6px 8px', borderRadius: '2px', fontSize: '10px', fontFamily: 'monospace' }}>
-          ERROR: {error}
+        <div style={{ marginTop: '8px', padding: '6px 10px', background: '#3B0F15', border: '1px solid #FF1744', color: '#FF8A80', fontSize: '12px', fontFamily: 'monospace', borderRadius: '3px' }}>
+          {error}
         </div>
       )}
 
-      {/* Preset Benchmarks */}
-      {samples.length > 0 && onSampleSelect && (
-        <div style={{ marginTop: '8px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: '#111726', padding: '4px 8px', border: '1px solid #23314A', borderRadius: '2px' }}>
-          <span style={{ fontSize: '10px', fontFamily: 'monospace', color: '#90CAF9', fontWeight: 700 }}>
-            BENCHMARK SAMPLES:
-          </span>
-          <div style={{ display: 'flex', gap: '4px' }}>
-            {samples.map((s) => (
-              <button
-                key={s.id}
-                type="button"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onSampleSelect(s.id);
-                }}
-                className="btn-m1k"
-                style={{ height: '20px', fontSize: '9px', padding: '0 6px', fontFamily: 'monospace', background: '#19263D', color: '#00E5FF', borderColor: '#2E4870' }}
-              >
-                {s.filename}
-              </button>
-            ))}
+      {/* Synchronous Channel Selector Strip */}
+      {columns.length > 0 && (
+        <div style={{ marginTop: '10px', background: '#0F1626', border: '1px solid #23314A', borderRadius: '4px', padding: '8px 10px' }}>
+          <div style={{ fontSize: '11px', fontFamily: 'monospace', fontWeight: 800, color: '#90CAF9', marginBottom: '6px', textTransform: 'uppercase' }}>
+            SELECT ACTIVE ANALYSIS CURRENT CHANNEL:
           </div>
-        </div>
-      )}
-
-      {/* Channel Strip Matrix */}
-      {columns.length > 0 && !error && (
-        <div style={{ marginTop: '8px', background: '#111726', border: '1px solid #23314A', padding: '6px 8px', borderRadius: '2px' }}>
-          <div style={{ fontSize: '9px', fontFamily: 'monospace', fontWeight: 700, color: '#90CAF9', marginBottom: '6px', display: 'flex', justifyContent: 'space-between' }}>
-            <span>ACTIVE CHANNEL ROUTING:</span>
-            <span style={{ color: '#00E5FF' }}>MCSA: CURRENT (I1/I2/I3)</span>
-          </div>
-
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
-            {columns.map((col) => {
-              const isCurr = CURRENT_COLS.includes(col);
-              const isSelected = col === selectedColumn;
-
+          <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+            {columns.map((c) => {
+              const isCurrent = CURRENT_COLS.includes(c);
+              const isSelected = selectedColumn === c;
               return (
                 <button
-                  key={col}
+                  key={c}
                   type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (onColumnChange) onColumnChange(col);
-                  }}
+                  onClick={() => onColumnChange && onColumnChange(c)}
+                  className="btn-m1k"
                   style={{
-                    height: '22px',
-                    padding: '0 6px',
+                    height: '26px',
+                    fontSize: '12px',
                     fontFamily: 'monospace',
-                    fontSize: '10px',
-                    borderRadius: '2px',
-                    border: isSelected ? '1px solid #00E5FF' : '1px solid #263852',
-                    background: isSelected ? '#00E5FF' : isCurr ? '#192538' : '#0F1522',
-                    color: isSelected ? '#000000' : isCurr ? '#E0F7FA' : '#64748B',
-                    fontWeight: isSelected || isCurr ? 700 : 400,
-                    cursor: 'pointer',
+                    fontWeight: 700,
+                    background: isSelected ? '#00E5FF' : isCurrent ? '#162238' : '#0F1420',
+                    color: isSelected ? '#000000' : isCurrent ? '#38BDF8' : '#94A3B8',
+                    borderColor: isSelected ? '#00E5FF' : isCurrent ? '#2563EB' : '#334155',
                   }}
                 >
-                  {col}
+                  {c} {isCurrent && '(Phase Current)'}
                 </button>
               );
             })}
