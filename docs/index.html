@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MotorSense &bull; DSP-Based Motor Current Signature Analysis (MCSA)</title>
+  <meta name="description" content="Professional, browser-only DSP-based Motor Current Signature Analysis (MCSA) for predictive maintenance and fault diagnosis of induction motors.">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- ── Header ─────────────────────────────────────────────────────────────── -->
+<header class="app-header">
+  <div class="header-brand">
+    <div class="header-acro-badge" aria-hidden="true">
+      <span class="header-acro">MS</span>
+    </div>
+    <div>
+      <div class="header-title">MotorSense &bull; MCSA Spectral Instrumentation</div>
+      <div class="header-sub">Predictive Maintenance &bull; ISO 20958-1 / IEEE 1415 Compliant &bull; 100% Client-Side DSP</div>
+    </div>
+  </div>
+
+  <div class="local-badge">
+    <span class="badge-dot"></span>
+    <span>100% Client-Side DSP (Zero Backend &bull; Web Workers)</span>
+  </div>
+</header>
+
+<!-- ── Mode Navigation ────────────────────────────────────────────────────── -->
+<nav class="tab-bar" role="tablist" aria-label="Analysis mode">
+  <button class="tab active" role="tab" aria-selected="true" aria-controls="tab-single" id="tab-btn-single" data-tab="single">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+    Single Analysis
+  </button>
+  <button class="tab" role="tab" aria-selected="false" aria-controls="tab-comparison" id="tab-btn-comparison" data-tab="comparison">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="18" rx="1"/><rect x="14" y="3" width="7" height="18" rx="1"/></svg>
+    Healthy vs Faulty Comparison
+  </button>
+</nav>
+
+<!-- ── Main Content ───────────────────────────────────────────────────────── -->
+<main class="app-main">
+
+<!-- ════════════════════════════════════════════════════════════════════════
+     SINGLE ANALYSIS TAB
+     ════════════════════════════════════════════════════════════════════════ -->
+<section id="tab-single" class="tab-content active" role="tabpanel" aria-labelledby="tab-btn-single">
+
+  <!-- Warnings area -->
+  <div id="warningsArea" class="panel" hidden>
+    <div class="panel-title">SYSTEM DIAGNOSTICS &amp; ADVISORIES</div>
+    <div class="warnings-panel" id="warningsList"></div>
+  </div>
+
+  <!-- ── FILE INGESTION PANEL ─────────────────────────────────────────── -->
+  <section class="panel" id="panel-file" aria-labelledby="file-panel-title">
+    <div class="panel-title" id="file-panel-title">1. RECORDING INPUT (ANY CSV OR MATLAB .MAT FILE)</div>
+
+    <div class="dropzone" id="dropzone" role="button" tabindex="0"
+         aria-label="Drop any motor recording file here, or click to browse">
+      <div class="dropzone-icon" aria-hidden="true">⊞</div>
+      <div class="dropzone-text">Drop your motor recording file here</div>
+      <div class="dropzone-sub">or <label class="file-link" for="fileInput">browse local files</label></div>
+      <input type="file" id="fileInput" accept=".csv,.mat" aria-label="Select motor current recording">
+      <div class="dropzone-info">
+        Works with ANY motor size, load, or file &bull; CSV (1 to N columns, any delimiter) &bull; MATLAB v5/v7 &amp; v7.3 HDF5 &bull; Up to 200 MB
+      </div>
+    </div>
+
+    <!-- Universal Quick Demo Generators -->
+    <div class="sample-loaders">
+      <span class="sample-label">Universal Quick Test:</span>
+      <div class="sample-btn-group">
+        <button type="button" class="btn-sample" id="btnDemoHealthy">
+          <span style="color:var(--green)">◈</span> Quick Test: Healthy Motor (Synthetic)
+        </button>
+        <button type="button" class="btn-sample" id="btnDemoFaulty">
+          <span style="color:var(--red)">▲</span> Quick Test: Faulty Motor (BRB -28 dB)
+        </button>
+      </div>
+    </div>
+
+    <div class="file-info" id="fileInfo" hidden aria-live="polite">
+      <table class="info-table" aria-label="File metadata">
+        <tbody>
+          <tr><td>File Name</td>      <td id="fi-name">—</td></tr>
+          <tr><td>File Size</td>      <td id="fi-size">—</td></tr>
+          <tr><td>File Format</td>    <td id="fi-format">—</td></tr>
+          <tr><td>Signal Samples</td> <td id="fi-samples">—</td></tr>
+          <tr><td>Total Duration</td> <td id="fi-duration">—</td></tr>
+          <tr><td>Sampling Rate</td>  <td id="fi-fs">—</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="channel-picker" id="channelPicker" hidden>
+      <div class="picker-label">Select Signal Channel to Analyze</div>
+      <div class="picker-note" role="note">
+        Select a stator current channel. Channels containing current (e.g. I1, Current, Phase A) are prioritized.
+      </div>
+      <div class="radio-group" id="channelRadios" role="radiogroup" aria-label="Detected channels"></div>
+    </div>
+  </section>
+
+  <!-- ── MOTOR & DSP PARAMETERS ────────────────────────────────────────── -->
+  <section class="panel" id="panel-params" aria-labelledby="params-panel-title">
+    <div class="panel-title" id="params-panel-title">2. MOTOR CONFIGURATION &amp; DSP PARAMETERS</div>
+
+    <div class="params-grid">
+      <div class="param-row">
+        <label for="p-fs">Sampling Frequency</label>
+        <div class="param-input-wrap">
+          <input type="number" id="p-fs" value="50000" min="100" max="500000" step="1">
+          <span class="param-unit">Hz</span>
+        </div>
+      </div>
+      <div class="param-row">
+        <label for="p-supply">Nominal Supply Frequency</label>
+        <div class="param-input-wrap">
+          <input type="number" id="p-supply" value="50" min="10" max="450" step="0.1">
+          <span class="param-unit">Hz</span>
+        </div>
+      </div>
+      <div class="param-row">
+        <label for="p-rpm">Rated Motor RPM</label>
+        <div class="param-input-wrap">
+          <input type="number" id="p-rpm" value="1450" min="1" step="1">
+          <span class="param-unit">RPM</span>
+        </div>
+      </div>
+      <div class="param-row">
+        <label for="p-poles">Number of Poles</label>
+        <div class="param-input-wrap">
+          <select id="p-poles">
+            <option value="2">2 Poles (3000/3600 RPM)</option>
+            <option value="4" selected>4 Poles (1500/1800 RPM)</option>
+            <option value="6">6 Poles (1000/1200 RPM)</option>
+            <option value="8">8 Poles (750/900 RPM)</option>
+          </select>
+        </div>
+      </div>
+      <div class="param-row">
+        <label for="p-lowcut">Bandpass Low Cutoff</label>
+        <div class="param-input-wrap">
+          <input type="number" id="p-lowcut" value="1" min="0.1" max="10000" step="0.1">
+          <span class="param-unit">Hz</span>
+        </div>
+      </div>
+      <div class="param-row">
+        <label for="p-highcut">Bandpass High Cutoff</label>
+        <div class="param-input-wrap">
+          <input type="number" id="p-highcut" value="5000" min="10" max="100000" step="1">
+          <span class="param-unit">Hz</span>
+        </div>
+      </div>
+      <div class="param-row">
+        <label for="p-threshold">Fault Threshold Limit</label>
+        <div class="param-input-wrap">
+          <input type="number" id="p-threshold" value="-40" max="0" min="-100" step="1">
+          <span class="param-unit">dBFS</span>
+        </div>
+      </div>
+      <div class="param-row">
+        <label for="p-fftsize">FFT Block Size</label>
+        <div class="param-input-wrap">
+          <select id="p-fftsize">
+            <option value="131072">131,072 (2¹⁷)</option>
+            <option value="262144">262,144 (2¹⁸)</option>
+            <option value="524288">524,288 (2¹⁹)</option>
+            <option value="1048576" selected>1,048,576 (2²⁰ &bull; ~0.048 Hz Δf)</option>
+          </select>
+        </div>
+      </div>
+      <div class="param-row">
+        <label for="p-welseg">Welch Segment Length</label>
+        <div class="param-input-wrap">
+          <select id="p-welseg">
+            <option value="16384">16,384 (2¹⁴)</option>
+            <option value="32768">32,768 (2¹⁵)</option>
+            <option value="65536" selected>65,536 (2¹⁶ &bull; ~0.76 Hz Δf)</option>
+            <option value="131072">131,072 (2¹⁷)</option>
+          </select>
+        </div>
+      </div>
+      <div class="param-row">
+        <label for="p-filterorder">Filter Order (Butterworth SOS)</label>
+        <div class="param-input-wrap">
+          <select id="p-filterorder">
+            <option value="1">2nd Order (1 Section)</option>
+            <option value="2" selected>4th Order (2 Sections)</option>
+            <option value="4">8th Order (4 Sections)</option>
+          </select>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── EXECUTE ACTION ────────────────────────────────────────────────── -->
+  <section class="action-panel">
+    <button class="btn-run" id="btnRun" disabled>
+      <span>⚡</span> EXECUTE MCSA ANALYSIS
+    </button>
+    <button class="btn-secondary" id="btnResetFull">Reset All</button>
+  </section>
+
+  <!-- ── PROGRESS PIPELINE ─────────────────────────────────────────────── -->
+  <section class="panel" id="panel-progress" hidden aria-labelledby="prog-title">
+    <div class="panel-title" id="prog-title">REAL-TIME DSP PIPELINE EXECUTION</div>
+    <div class="progress-bar-wrap">
+      <div class="progress-bar" id="progressBar" role="progressbar" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
+    </div>
+    <div class="progress-steps" id="progressSteps"></div>
+  </section>
+
+  <!-- ── TELEMETRY KPI GRID ────────────────────────────────────────────── -->
+  <section class="panel" id="panel-kpi" hidden aria-labelledby="kpi-panel-title">
+    <div class="panel-title" id="kpi-panel-title">KEY DIAGNOSTIC TELEMETRY</div>
+    <div class="kpi-grid">
+      <div class="kpi-card highlight">
+        <span class="kpi-title">Stator Current RMS</span>
+        <span class="kpi-value" id="kpi-rms">—</span>
+        <span class="kpi-sub" id="kpi-rms-sub">Operational Current</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-title">Fundamental Carrier</span>
+        <span class="kpi-value" id="kpi-fund">—</span>
+        <span class="kpi-sub" id="kpi-fund-freq">Carrier Reference</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-title">Rotor Bar Sideband</span>
+        <span class="kpi-value" id="kpi-sb">—</span>
+        <span class="kpi-sub" id="kpi-sb-sub">f0(1 ± 2s) Status</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-title">Eccentricity / Alignment</span>
+        <span class="kpi-value" id="kpi-ecc">—</span>
+        <span class="kpi-sub" id="kpi-ecc-sub">f0 ± fr Sidebands</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-title">5th Harmonic (Flux Distortion)</span>
+        <span class="kpi-value" id="kpi-h5">—</span>
+        <span class="kpi-sub">Winding &amp; Saturation</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-title">Modulation Index</span>
+        <span class="kpi-value" id="kpi-env">—</span>
+        <span class="kpi-sub">Demodulated AM Energy</span>
+      </div>
+      <div class="kpi-card">
+        <span class="kpi-title">Total Harmonics (THD)</span>
+        <span class="kpi-value" id="kpi-thd">—</span>
+        <span class="kpi-sub">Current Distortion</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── HEALTH VERDICT ─────────────────────────────────────────────────── -->
+  <section class="panel" id="panel-health" hidden aria-labelledby="health-panel-title">
+    <div class="panel-title" id="health-panel-title">AUTOMATED HEALTH DIAGNOSIS</div>
+    <div id="healthVerdict" aria-live="assertive"></div>
+    <div class="verdict-note">
+      Multi-factor MCSA assessment compliant with ISO 20958-1 / IEEE 1415 standards.
+      Scale-invariant evaluation based on relative decibel levels (dBFS), local baseline peak prominence, and modulation index.
+    </div>
+  </section>
+
+  <!-- ── SIGNAL QUALITY AUDIT ──────────────────────────────────────────── -->
+  <section class="panel" id="panel-quality" hidden aria-labelledby="quality-panel-title">
+    <div class="panel-title" id="quality-panel-title">SIGNAL QUALITY AUDIT</div>
+    <div id="qualityBadge" aria-live="polite"></div>
+    <div id="qualityReport"></div>
+  </section>
+
+  <!-- ── TIME DOMAIN WAVEFORMS ─────────────────────────────────────────── -->
+  <section class="panel" id="panel-raw" hidden aria-labelledby="raw-panel-title">
+    <div class="panel-title" id="raw-panel-title">TIME DOMAIN &bull; RAW CURRENT WAVEFORM</div>
+    <div class="chart-info" id="rawInfo"></div>
+    <div class="chart-container" id="chart-raw" role="img" aria-label="Raw current waveform"></div>
+  </section>
+
+  <section class="panel" id="panel-filtered" hidden aria-labelledby="filt-panel-title">
+    <div class="panel-title" id="filt-panel-title">TIME DOMAIN &bull; BANDPASS FILTERED CURRENT (BUTTERWORTH SOS)</div>
+    <div class="chart-info" id="filterInfo"></div>
+    <div class="chart-container" id="chart-filtered" role="img" aria-label="Filtered waveform"></div>
+  </section>
+
+  <!-- ── FREQUENCY DOMAIN SPECTRA ──────────────────────────────────────── -->
+  <section class="panel" id="panel-fft" hidden aria-labelledby="fft-panel-title">
+    <div class="panel-title" id="fft-panel-title">FREQUENCY DOMAIN &bull; HANN-WINDOWED FFT SPECTRUM (dBFS)</div>
+    <div class="chart-info" id="fftInfo"></div>
+    <div class="freq-inspector" role="group" aria-label="Frequency zoom controls">
+      <label for="fftCenter">Center:</label>
+      <input type="number" id="fftCenter" value="50" step="0.5"> Hz &plusmn;
+      <input type="number" id="fftSpan" value="15" min="1"> Hz
+      <button id="btnZoomFFT">Zoom Sidebands</button>
+      <button id="btnResetFFT">Full Spectrum</button>
+    </div>
+    <div class="chart-container tall" id="chart-fft" role="img" aria-label="FFT amplitude spectrum chart"></div>
+  </section>
+
+  <section class="panel" id="panel-welch" hidden aria-labelledby="welch-panel-title">
+    <div class="panel-title" id="welch-panel-title">FREQUENCY DOMAIN &bull; WELCH POWER SPECTRAL DENSITY (PSD)</div>
+    <div class="chart-info" id="welchInfo"></div>
+    <div class="chart-container tall" id="chart-welch" role="img" aria-label="Welch PSD chart"></div>
+  </section>
+
+  <!-- ── HILBERT DEMODULATION ───────────────────────────────────────────── -->
+  <section class="panel" id="panel-hilbert" hidden aria-labelledby="hilbert-panel-title">
+    <div class="panel-title" id="hilbert-panel-title">AMPLITUDE DEMODULATION &bull; HILBERT ENVELOPE SPECTRUM</div>
+    <div class="chart-info" id="hilbertInfo"></div>
+    <div class="chart-container tall" id="chart-hilbert" role="img" aria-label="Hilbert envelope spectrum chart"></div>
+  </section>
+
+  <!-- ── MOTOR KINEMATICS & SIDEBANDS ──────────────────────────────────── -->
+  <section class="panel" id="panel-kinematics" hidden aria-labelledby="kin-panel-title">
+    <div class="panel-title" id="kin-panel-title">MOTOR KINEMATICS &amp; FAULT FREQUENCIES</div>
+    <div class="panel-body">
+      <div id="kinematicsReport"></div>
+    </div>
+  </section>
+
+  <!-- ── EXTRACTED FEATURES & HARMONICS TABLE ───────────────────────────── -->
+  <section class="panel" id="panel-features" hidden aria-labelledby="feat-panel-title">
+    <div class="panel-title" id="feat-panel-title">EXTRACTED SPECTRAL FEATURES &amp; HARMONIC DISTORTION</div>
+    <div id="featureTableWrap"></div>
+  </section>
+
+  <!-- ── EDUCATIONAL METHODS ────────────────────────────────────────────── -->
+  <section class="panel" id="panel-methods" hidden aria-labelledby="methods-title">
+    <div class="panel-title" id="methods-title">DSP DIAGNOSTIC METHODOLOGY</div>
+    <div class="methods-grid">
+      <div class="method-card">
+        <h3>Motor Current Signature (MCSA)</h3>
+        <p>Detects broken rotor bars, eccentricity, and phase imbalances via modulation sidebands around the carrier without external vibration sensors.</p>
+      </div>
+      <div class="method-card">
+        <h3>Second-Order Sections (SOS)</h3>
+        <p>Biquad cascade formulation for digital filtering. Eliminates numerical instability and floating-point roundoff errors at high sampling rates (50 kHz).</p>
+      </div>
+      <div class="method-card">
+        <h3>Hilbert Demodulation</h3>
+        <p>Computes the analytic signal to extract the instantaneous amplitude envelope. Isolates low-frequency torque oscillations and mechanical impacts.</p>
+      </div>
+      <div class="method-card">
+        <h3>Harmonic &amp; THD Analysis</h3>
+        <p>Tracks triplen and odd harmonics (3rd, 5th, 7th) to assess stator winding asymmetry, negative sequence flux, and core magnetic saturation.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── EXPORT ACTION ─────────────────────────────────────────────────── -->
+  <section class="panel action-panel">
+    <button class="btn-export" id="btnExport" disabled>⬇ EXPORT FULL DIAGNOSTIC REPORT (JSON)</button>
+  </section>
+
+</section>
+
+
+<!-- ════════════════════════════════════════════════════════════════════════
+     COMPARISON TAB
+     ════════════════════════════════════════════════════════════════════════ -->
+<section id="tab-comparison" class="tab-content" role="tabpanel" aria-labelledby="tab-btn-comparison" hidden>
+
+  <div class="comparison-layout">
+
+    <!-- Baseline File -->
+    <section class="panel comparison-half" aria-labelledby="healthy-title">
+      <div class="panel-title" id="healthy-title">BASELINE / HEALTHY RECORDING</div>
+      <div class="dropzone dropzone-small" id="dropzone-healthy" role="button" tabindex="0"
+           aria-label="Drop healthy baseline recording here">
+        <div class="dropzone-text" style="font-size:0.95rem;">Drop Baseline Recording</div>
+        <div class="dropzone-sub">or <label class="file-link" for="fileInput-healthy">browse file</label></div>
+        <input type="file" id="fileInput-healthy" accept=".csv,.mat" aria-label="Select baseline recording">
+      </div>
+      <div id="healthyFileInfo" class="file-info" hidden></div>
+      <div class="radio-group" id="channelRadios-healthy" style="padding:0.5rem 1rem;" role="radiogroup" aria-label="Baseline channel">
+        <label class="current-channel"><input type="radio" name="ch-healthy" value="I1" checked> I1</label>
+        <label><input type="radio" name="ch-healthy" value="I2"> I2</label>
+        <label><input type="radio" name="ch-healthy" value="I3"> I3</label>
+      </div>
+      <div style="padding:0.5rem 1rem 0.85rem;">
+        <button class="btn-run small" id="btnRunHealthy" disabled>▶ Analyze Baseline</button>
+      </div>
+      <div class="compare-verdict" id="healthyVerdict" aria-live="polite"></div>
+    </section>
+
+    <!-- Target File -->
+    <section class="panel comparison-half" aria-labelledby="faulty-title">
+      <div class="panel-title" id="faulty-title">TARGET / TEST RECORDING</div>
+      <div class="dropzone dropzone-small" id="dropzone-faulty" role="button" tabindex="0"
+           aria-label="Drop target motor recording here">
+        <div class="dropzone-text" style="font-size:0.95rem;">Drop Target Recording</div>
+        <div class="dropzone-sub">or <label class="file-link" for="fileInput-faulty">browse file</label></div>
+        <input type="file" id="fileInput-faulty" accept=".csv,.mat" aria-label="Select target recording">
+      </div>
+      <div id="faultyFileInfo" class="file-info" hidden></div>
+      <div class="radio-group" id="channelRadios-faulty" style="padding:0.5rem 1rem;" role="radiogroup" aria-label="Target channel">
+        <label class="current-channel"><input type="radio" name="ch-faulty" value="I1" checked> I1</label>
+        <label><input type="radio" name="ch-faulty" value="I2"> I2</label>
+        <label><input type="radio" name="ch-faulty" value="I3"> I3</label>
+      </div>
+      <div style="padding:0.5rem 1rem 0.85rem;">
+        <button class="btn-run small" id="btnRunFaulty" disabled>▶ Analyze Target</button>
+      </div>
+      <div class="compare-verdict" id="faultyVerdict" aria-live="polite"></div>
+    </section>
+
+  </div>
+
+  <!-- Comparison Delta Table -->
+  <section class="panel" id="panel-comp-features" hidden aria-labelledby="comp-feat-title">
+    <div class="panel-title" id="comp-feat-title">DIAGNOSTIC FEATURE DELTA (TARGET &minus; BASELINE)</div>
+    <div id="compFeatureTable"></div>
+  </section>
+
+  <!-- Comparison: FFT Overlay -->
+  <section class="panel" id="panel-comp-fft" hidden aria-labelledby="comp-fft-title">
+    <div class="panel-title" id="comp-fft-title">SPECTRAL OVERLAY &bull; FFT AMPLITUDE (dBFS)</div>
+    <div class="freq-inspector" role="group" aria-label="Frequency zoom controls for comparison">
+      <label for="compFftCenter">Center:</label>
+      <input type="number" id="compFftCenter" value="50" step="0.5"> Hz &plusmn;
+      <input type="number" id="compFftSpan" value="15" min="1"> Hz
+      <button id="btnZoomCompFFT">Zoom Sidebands</button>
+      <button id="btnResetCompFFT">Full Range</button>
+    </div>
+    <div class="chart-container tall" id="chart-comp-fft" role="img" aria-label="Overlaid spectra"></div>
+  </section>
+
+  <!-- Comparison: Welch Overlay -->
+  <section class="panel" id="panel-comp-welch" hidden aria-labelledby="comp-welch-title">
+    <div class="panel-title" id="comp-welch-title">SPECTRAL OVERLAY &bull; WELCH PSD (dB)</div>
+    <div class="chart-container tall" id="chart-comp-welch" role="img" aria-label="Overlaid Welch PSD"></div>
+  </section>
+
+  <!-- Comparison: Hilbert Overlay -->
+  <section class="panel" id="panel-comp-hilbert" hidden aria-labelledby="comp-hilbert-title">
+    <div class="panel-title" id="comp-hilbert-title">DEMODULATION OVERLAY &bull; HILBERT ENVELOPE SPECTRUM</div>
+    <div class="chart-container tall" id="chart-comp-hilbert" role="img" aria-label="Overlaid envelope spectra"></div>
+  </section>
+
+</section>
+
+</main>
+
+<!-- Locally bundled Plotly -->
+<script src="libs/plotly-basic.min.js"></script>
+<!-- Main Application Controller -->
+<script src="app.js"></script>
+
+</body>
+</html>
