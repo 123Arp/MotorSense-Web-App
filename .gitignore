@@ -1,4 +1,4 @@
-﻿# Dependencies
+# Dependencies
 node_modules/
 .venv/
 venv/
@@ -26,3 +26,6 @@ Thumbs.db
 
 # Large ZIPs
 *.zip
+
+# Local test data in mcsa folder (already tracked at root data_test/)
+mcsa/data_test/
