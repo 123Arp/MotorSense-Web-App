@@ -5,6 +5,15 @@ A **fully browser-based** DSP analysis tool. Upload your motor current recording
 
 ---
 
+## 📑 Academic Project Reports (IIT Madras)
+
+- **Final Project Report (25 pages):** [📄 MotorSense_Final_Project_Report.pdf](./reports/MotorSense_Final_Project_Report.pdf) — Comprehensive theoretical formulation, dual-method spectral validation (FFT and Welch PSD), Hilbert envelope demodulation, automatic oversampling detection, and threshold sensitivity analysis.
+- **Mid-Term Progress Report (9 pages):** [📋 MotorSense_Mid_Term_Progress_Report.pdf](./reports/MotorSense_Mid_Term_Progress_Report.pdf) — Initial architecture, dataset selection, and prototype implementation.
+- **Demonstration Video:** [🎥 Google Drive Link](https://drive.google.com/file/d/14phbgEznthW56Czj5QAwZIYJ9sOutjIW/view?usp=sharing)
+- **Live Netlify Web App:** [https://arpitmotorsense.netlify.app/](https://arpitmotorsense.netlify.app/)
+
+---
+
 ## Quick Start
 
 1. **Download / clone** this repository
@@ -139,6 +148,9 @@ mcsa/
 ├── butterworth.js          ← Butterworth SOS bandpass filter design
 ├── csv-parser-worker.js    ← Chunked streaming CSV parser
 ├── mat-parser-worker.js    ← MATLAB .mat parser (v5 + v7.3 HDF5)
+├── reports/                ← Bundled PDF project reports
+│   ├── MotorSense_Final_Project_Report.pdf
+│   └── MotorSense_Mid_Term_Progress_Report.pdf
 ├── libs/
 │   ├── plotly-basic.min.js ← Plotly.js basic bundle (bundled locally)
 │   └── hdf5_hl.js          ← h5wasm HDF5 library (for MATLAB v7.3 files)

@@ -1,8 +1,31 @@
-﻿# MotorSense — DSP-Based Motor Current Signature Analysis (MCSA)
+# MotorSense — DSP-Based Motor Current Signature Analysis (MCSA)
 
 **MotorSense** is an industrial-grade diagnostic web application for the predictive maintenance and fault detection of three-phase squirrel-cage induction motors using **Motor Current Signature Analysis (MCSA)**.
 
 By analyzing the stator current in the frequency domain, MotorSense detects and quantifies mechanical and electrical anomalies (rotor-bar defects, air-gap eccentricity, mechanical misalignment, bearing deterioration, and phase imbalance) **without requiring dedicated vibration sensors**.
+
+---
+
+## 📑 Academic Project Reports & Submissions
+
+This project was developed for the **Signal Processing Project** course under the **BS in Electronic Systems** program at the **Indian Institute of Technology Madras (IIT Madras)**.
+
+- **Author:** Arpit Katiyar (Roll Number: `24f1100064` / `ES24F1100064`)
+- **Instructor / Course POD:** Vishal
+- **Project Code:** Custom (own topic proposal, approved with 5% bonus)
+- **Live Netlify Web Application:** [https://arpitmotorsense.netlify.app/](https://arpitmotorsense.netlify.app/)
+- **Live GitHub Pages App:** [https://123arp.github.io/MotorSense-Web-App/](https://123arp.github.io/MotorSense-Web-App/)
+- **Video Demonstration:** [Google Drive Link](https://drive.google.com/file/d/14phbgEznthW56Czj5QAwZIYJ9sOutjIW/view?usp=sharing)
+- **Source Code Archive:** [Google Drive Link](https://drive.google.com/file/d/1vdpsHEyG1BcHx3m-hzZHuSaRrhdH0IQg/view?usp=sharing)
+
+### Official Reports Included in Repository
+
+| Report | Document Link | Submission Date | Description |
+|---|---|---|---|
+| **Final Project Report** | [📄 MotorSense_Final_Project_Report.pdf](./reports/MotorSense_Final_Project_Report.pdf) | 18-09-2026 | Full 25-page comprehensive final report covering theoretical foundation, DSP architecture, algorithm implementation, problem solving, dual-method validation (FFT & Welch PSD), Hilbert envelope analysis, and threshold sensitivity analysis. |
+| **Mid-Term Progress Report** | [📋 MotorSense_Mid_Term_Progress_Report.pdf](./reports/MotorSense_Mid_Term_Progress_Report.pdf) | 30-08-2026 | 9-page mid-term progress report detailing dataset evaluation, first-principles DSP pipeline implementation, mathematical formulation, initial synthetic/real validation, and project timeline. |
+
+> Complete executive summaries, problem formulations, and validation notes are cataloged in [`reports/README.md`](./reports/README.md).
 
 ---
 
@@ -54,35 +77,57 @@ All signal processing algorithms are built from first principles using standard 
 
 ---
 
+## Experimental Validation & Results (From Final Report)
+
+The pipeline was validated against both controlled synthetic signals and a full **1,000,000-sample** real current recording from the Figshare benchmark dataset (161.4 MB, 9 synchronized channels, 50 kHz):
+
+### Quantitative Results Summary (Final Report, Table 7.1)
+
+| Test Case | Lower Sideband | Upper Sideband | Health Verdict | Validation Outcome |
+|---|---|---|---|---|
+| **Synthetic, Healthy Signal** | $\approx -80\text{ dB}$ | $\approx -80\text{ dB}$ | **HEALTHY** | Confirms baseline noise floor |
+| **Synthetic, Injected Fault** | $\approx -27\text{ dB}$ | — | **FAULT LIKELY** | High-sensitivity fault trigger |
+| **Real Recording — FFT (primary)** | $-52.91\text{ dB}$ | $-50.49\text{ dB}$ | **HEALTHY** | Independent spectral agreement |
+| **Real Recording — Welch PSD (cross-check)** | $-46.45\text{ dB}$ | $-43.68\text{ dB}$ | **HEALTHY** | Reduced-variance agreement |
+| **Real Recording (Tested with wrong $f_{supply}=60\text{ Hz}$)** | $+4.0\text{ dB}$ | $-2.5\text{ dB}$ | **Flagged Unreliable** | Fundamental-dominance safeguard caught error |
+
+- **Corroborating Hilbert Envelope:** Peak detected at 2.441 Hz, closely matching the theoretical $2 \times f_{slip} = 3.333\text{ Hz}$ at low modulation amplitude ($1.361 \times 10^{-3}$), confirming no severe eccentricity or broken bar fault.
+- **Threshold Sensitivity:** The recording remains classified as **HEALTHY** across all detection thresholds from $-30\text{ dB}$ to $-50\text{ dB}$, confirming the classification is robust and not borderline.
+
+---
+
 ## Project Structure
 
 ```
 MotorSense-Web-App/
-├── backend/                  # FastAPI DSP Service
+├── reports/                  # Academic project documentation & reports (IIT Madras)
+│   ├── MotorSense_Final_Project_Report.pdf       # 25-page Final Report
+│   ├── MotorSense_Mid_Term_Progress_Report.pdf   # 9-page Mid-Term Report
+│   └── README.md                                 # Report index and summaries
+├── mcsa/                     # 100% Client-Side Web Application (GitHub Pages deployment)
+│   ├── index.html            # Instrument-panel dashboard (Single & Comparison tabs)
+│   ├── style.css             # High-contrast industrial UI theme
+│   ├── app.js                # UI orchestration & Plotly chart renderers
+│   ├── dsp-worker.js         # Web Worker: FFT, Welch PSD, Hilbert, SOS filter
+│   ├── butterworth.js        # Second-order sections (SOS) bandpass filter
+│   ├── fft.js                # Radix-2 Cooley-Tukey FFT with Hann window
+│   ├── csv-parser-worker.js  # Chunked streaming CSV parser
+│   ├── mat-parser-worker.js  # MATLAB v5 & v7.3 HDF5 binary parser
+│   ├── libs/                 # Local plotly & h5wasm libraries
+│   └── reports/              # Bundled PDF reports for direct browser viewing
+├── docs/                     # GitHub Pages publication directory (mirror of mcsa)
+│   ├── index.html
+│   ├── reports/              # Bundled PDF reports
+│   └── ...
+├── backend/                  # FastAPI DSP Service (Python alternative)
 │   ├── dsp_pipeline.py       # First-principles DSP pipeline
 │   ├── file_parser.py        # CSV, MATLAB v5/v7 & v7.3 HDF5 readers
 │   ├── main.py               # REST API endpoints & sample streamer
 │   ├── requirements.txt
 │   └── Dockerfile
-├── frontend/                 # React 18 + Vite + Tailwind CSS
-│   ├── public/
-│   │   ├── favicon.svg
-│   │   └── _redirects        # Netlify proxy configuration
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── ParameterPanel.jsx
-│   │   │   ├── FileUpload.jsx
-│   │   │   ├── PipelineView.jsx
-│   │   │   ├── ComparisonView.jsx
-│   │   │   ├── SpectrumChart.jsx
-│   │   │   ├── FeatureTable.jsx
-│   │   │   └── VerdictBadge.jsx
-│   │   ├── api.js
-│   │   ├── App.jsx
-│   │   ├── index.css
-│   │   └── main.jsx
-│   ├── Dockerfile
-│   ├── nginx.conf
+├── frontend/                 # React 18 + Vite + Tailwind CSS dashboard
+│   ├── public/reports/       # Static reports bundled with React frontend
+│   ├── src/components/       # Modular dashboard components
 │   └── package.json
 ├── data_test/                # Sample 50 kHz multi-channel recordings
 │   ├── FILE 1.mat

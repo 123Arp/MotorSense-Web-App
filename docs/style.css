@@ -140,6 +140,27 @@ a:hover { text-decoration: underline; color: #7dd3fc; }
     white-space: nowrap;
     box-shadow: 0 0 12px rgba(16, 185, 129, 0.2);
 }
+.report-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    background: rgba(2, 132, 199, 0.15);
+    border: 1px solid rgba(56, 189, 248, 0.4);
+    border-radius: 999px;
+    padding: 0.35rem 0.85rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #38bdf8;
+    text-decoration: none;
+    transition: all 0.2s ease;
+}
+.report-badge:hover {
+    background: rgba(2, 132, 199, 0.35);
+    border-color: #38bdf8;
+    color: #ffffff;
+    text-decoration: none;
+    box-shadow: 0 0 10px rgba(56, 189, 248, 0.25);
+}
 .badge-dot {
     width: 8px; height: 8px;
     border-radius: 50%;
